@@ -1,6 +1,6 @@
 # Capital Trust Bank
 
-A demonstration banking website. Customers register, request deposits, withdrawals and transfers, order a card through live support, and chat with the bank. An administrator approves transactions, issues cards and answers support chats. No real money is involved.
+Capital Trust Bank is an online banking website. Customers register and log in, deposit and withdraw money (a withdrawal sends money to any account and needs a card), order a card through live support, and chat with the bank. An administrator reviews and approves transactions, issues cards, and answers support chats.
 
 Built with plain HTML, CSS and JavaScript and a small Node.js server that uses Node's built-in SQLite. There are no npm dependencies.
 

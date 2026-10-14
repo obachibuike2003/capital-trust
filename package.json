@@ -1,7 +1,7 @@
 {
   "name": "capital-trust-bank",
   "version": "1.0.0",
-  "description": "Capital Trust Bank - demo banking site with admin-approved dummy transactions",
+  "description": "Capital Trust Bank - online banking site with admin-approved transactions",
   "private": true,
   "main": "server.js",
   "scripts": {
