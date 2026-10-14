@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My account - Capital Trust Bank</title>
+    <link rel="icon" type="image/png" href="/img/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/motion.css" />
+  </head>
+  <body class="shell">
+    <aside class="sidebar">
+      <a class="brand notranslate" href="#overview" translate="no">
+        <img class="brand-mark" src="/img/logo-mark-clear.png" alt="" width="36" height="36" />
+        <span>Capital Trust Bank</span>
+      </a>
+      <nav class="side-nav" aria-label="Account">
+        <a href="#overview" data-nav="overview"><span data-icon="home"></span> <span>Overview</span></a>
+        <a href="#payments" data-nav="payments"><span data-icon="send"></span> <span>Payments</span></a>
+        <a href="#history" data-nav="history"><span data-icon="list"></span> <span>History</span></a>
+        <a href="#card" data-nav="card"><span data-icon="card"></span> <span>Card</span></a>
+        <a href="#profile" data-nav="profile"><span data-icon="user"></span> <span>Profile</span></a>
+      </nav>
+      <button class="side-logout" type="button" data-logout><span data-icon="logout"></span> <span>Log out</span></button>
+    </aside>
+
+    <div class="shell-main">
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1 id="view-title">Overview</h1>
+          <p class="muted" id="view-sub">Welcome back.</p>
+        </div>
+        <div class="header-actions">
+          <div data-lang-switch></div>
+          <a class="profile-chip" href="#profile">
+            <span class="avatar notranslate" id="user-initials" aria-hidden="true"></span>
+            <span class="profile-chip-text">
+              <strong class="notranslate" id="user-name"></strong>
+              <small id="user-type"></small>
+            </span>
+          </a>
+          <button class="btn btn-secondary topbar-logout" type="button" data-logout aria-label="Log out"><span data-icon="logout"></span></button>
+        </div>
+      </header>
+
+      <main class="shell-content">
+        <!-- ---------------------------------------------------- Overview -->
+        <section data-view="overview">
+          <div class="overview-grid">
+            <div class="bank-card">
+              <div class="card-top"><span class="notranslate">Capital Trust</span><span class="chip" aria-hidden="true"></span></div>
+              <div>
+                <p class="label">Total balance</p>
+                <p class="amount num notranslate" data-bind="balance">&mdash;</p>
+              </div>
+              <div class="card-bottom">
+                <div>
+                  <p class="label">Account number</p>
+                  <strong class="card-number num notranslate" data-bind="accountNumber">&mdash;</strong>
+                  <p class="card-holder notranslate" data-bind="fullName"></p>
+                </div>
+                <button class="copy-btn" type="button" data-copy-account><span data-icon="copy"></span> Copy</button>
+              </div>
+            </div>
+
+            <div class="stat">
+              <span class="stat-icon"><span data-icon="wallet"></span></span>
+              <p class="label">Available balance</p>
+              <p class="value num notranslate" data-bind="available">&mdash;</p>
+              <p class="muted">Ready to use now</p>
+            </div>
+            <div class="stat">
+              <span class="stat-icon"><span data-icon="arrow-down"></span></span>
+              <p class="label">Money in this month</p>
+              <p class="value num notranslate amount-in" id="month-in">&mdash;</p>
+              <p class="muted" id="month-label"></p>
+            </div>
+            <div class="stat">
+              <span class="stat-icon is-amber"><span data-icon="arrow-up"></span></span>
+              <p class="label">Money out this month</p>
+              <p class="value num notranslate" id="month-out">&mdash;</p>
+              <p class="muted">Withdrawals and transfers</p>
+            </div>
+          </div>
+
+          <div class="quick-actions" aria-label="Quick actions">
+            <a class="quick" href="#payments" data-quick="deposit"><span class="quick-icon"><span data-icon="arrow-down"></span></span> Add money</a>
+            <a class="quick" href="#payments" data-quick="transfer"><span class="quick-icon"><span data-icon="send"></span></span> Send money</a>
+            <a class="quick" href="#payments" data-quick="withdrawal"><span class="quick-icon"><span data-icon="arrow-up"></span></span> Withdraw</a>
+            <a class="quick" href="#history"><span class="quick-icon"><span data-icon="list"></span></span> Statement</a>
+          </div>
+
+          <section class="panel" aria-labelledby="chart-title">
+            <div class="panel-head">
+              <div>
+                <h2 id="chart-title">Money in and out</h2>
+                <p class="muted">Completed transactions, last 6 months</p>
+              </div>
+              <ul class="legend" aria-label="Chart legend">
+                <li><span class="swatch swatch-in"></span> Money in</li>
+                <li><span class="swatch swatch-out"></span> Money out</li>
+              </ul>
+            </div>
+            <div class="chart" id="chart"></div>
+            <details class="chart-table">
+              <summary>View as table</summary>
+              <div id="chart-table"></div>
+            </details>
+          </section>
+
+          <div class="columns columns--wide-left">
+            <section class="panel" aria-labelledby="recent-title">
+              <div class="panel-head">
+                <h2 id="recent-title">Recent activity</h2>
+                <a class="btn btn-ghost btn-sm" href="#history">View all <span data-icon="chevron-right"></span></a>
+              </div>
+              <div id="recent" aria-live="polite">
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+              </div>
+            </section>
+
+            <section class="panel" aria-labelledby="details-title">
+              <div class="panel-head">
+                <h2 id="details-title">Account details</h2>
+              </div>
+              <dl class="details">
+                <div><dt>Account holder</dt><dd class="notranslate" data-bind="fullName"></dd></div>
+                <div><dt>Account type</dt><dd data-bind="accountType"></dd></div>
+                <div><dt>Account number</dt><dd class="num notranslate" data-bind="accountNumber"></dd></div>
+                <div><dt>Currency</dt><dd class="notranslate">USD</dd></div>
+                <div><dt>Country</dt><dd data-bind="country"></dd></div>
+                <div><dt>Member since</dt><dd data-bind="memberSince"></dd></div>
+              </dl>
+            </section>
+          </div>
+        </section>
+
+        <!-- ---------------------------------------------------- Payments -->
+        <section data-view="payments" hidden>
+          <div class="columns">
+            <section class="panel" aria-labelledby="new-tx-title">
+              <div class="panel-head">
+                <h2 id="new-tx-title">New payment</h2>
+                <span class="muted">Available <strong class="num notranslate" data-bind="available"></strong></span>
+              </div>
+
+              <form id="tx-form" novalidate>
+                <div class="alert" role="alert" tabindex="-1" hidden></div>
+
+                <fieldset class="field choice-group">
+                  <legend class="field-label">What would you like to do?</legend>
+                  <div class="segmented">
+                    <input type="radio" name="type" id="type-deposit" value="deposit" checked />
+                    <label for="type-deposit"><span data-icon="arrow-down"></span> Deposit</label>
+                    <input type="radio" name="type" id="type-transfer" value="transfer" />
+                    <label for="type-transfer"><span data-icon="send"></span> Send</label>
+                    <input type="radio" name="type" id="type-withdrawal" value="withdrawal" />
+                    <label for="type-withdrawal"><span data-icon="arrow-up"></span> Withdraw</label>
+                  </div>
+                </fieldset>
+
+                <div class="field">
+                  <label for="amount">Amount (USD)</label>
+                  <input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" required />
+                </div>
+
+                <div id="transfer-fields" hidden>
+                  <div class="field" id="saved-field" hidden>
+                    <label for="saved">Saved recipient</label>
+                    <select id="saved" name="saved"></select>
+                  </div>
+                  <div class="field">
+                    <label for="recipientAccount">Recipient account number</label>
+                    <input id="recipientAccount" name="recipientAccount" type="text" inputmode="numeric" autocomplete="off" maxlength="40" />
+                  </div>
+                  <div class="field">
+                    <label for="recipientName">Recipient name</label>
+                    <input id="recipientName" name="recipientName" type="text" autocomplete="off" maxlength="80" />
+                  </div>
+                  <div class="field">
+                    <label class="check">
+                      <input type="checkbox" name="saveRecipient" id="saveRecipient" />
+                      <span>Save this recipient for next time</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label for="description">Reference <span class="muted">(optional)</span></label>
+                  <input id="description" name="description" type="text" autocomplete="off" maxlength="140" />
+                </div>
+
+                <button class="btn btn-primary btn-lg btn-block" type="submit" id="tx-submit">Add money</button>
+              </form>
+
+              <p class="demo-note">
+                <span data-icon="info"></span>
+                <span>Demonstration account. No real money moves.</span>
+              </p>
+            </section>
+
+            <section class="panel" aria-labelledby="saved-title">
+              <div class="panel-head">
+                <h2 id="saved-title">Saved recipients</h2>
+              </div>
+              <div id="beneficiaries" aria-live="polite"></div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ---------------------------------------------------- History -->
+        <section data-view="history" hidden>
+          <section class="panel">
+            <div class="filters">
+              <div class="search">
+                <span data-icon="search"></span>
+                <label class="sr-only" for="search">Search transactions</label>
+                <input class="input" id="search" type="search" placeholder="Search by name, reference or note" autocomplete="off" />
+              </div>
+              <div class="tabs tabs--pill" role="tablist" aria-label="Filter transactions">
+                <button class="tab" role="tab" aria-selected="true" data-filter="all">All</button>
+                <button class="tab" role="tab" aria-selected="false" data-filter="in">Money in</button>
+                <button class="tab" role="tab" aria-selected="false" data-filter="out">Money out</button>
+              </div>
+            </div>
+            <div id="history" aria-live="polite">
+              <div class="skeleton"></div>
+              <div class="skeleton"></div>
+              <div class="skeleton"></div>
+            </div>
+          </section>
+        </section>
+
+        <!-- ---------------------------------------------------- Card -->
+        <section data-view="card" hidden>
+          <!-- No card yet: cards are ordered through live support. -->
+          <div class="columns" id="card-none">
+            <div id="card-locked" aria-hidden="true"></div>
+
+            <section class="panel" aria-labelledby="order-title">
+              <div class="panel-head">
+                <h2 id="order-title">Order your card</h2>
+              </div>
+              <p class="muted">Cards are issued by our support team. Start a chat, tell us which card you would like, and we will set it up for you.</p>
+              <div class="tiers" id="tiers"></div>
+              <button class="btn btn-primary btn-lg btn-block" type="button" data-open-support="Hello, I would like to order a card.">
+                <span data-icon="chat"></span> Chat with support
+              </button>
+              <p class="demo-note">
+                <span data-icon="info"></span>
+                <span>The card fee is taken from your demonstration balance. No real payment is involved.</span>
+              </p>
+            </section>
+          </div>
+
+          <!-- Card issued by the bank. -->
+          <div class="columns" id="card-issued" hidden>
+            <div>
+              <div id="card-visual"></div>
+              <button class="btn btn-secondary btn-block" type="button" id="flip-card" aria-pressed="false" style="margin-top: 16px">
+                <span data-icon="refresh"></span> <span id="flip-card-label">Show back of card</span>
+              </button>
+              <button class="btn btn-secondary btn-block" type="button" id="toggle-digits" aria-pressed="false" style="margin-top: 8px">
+                <span data-icon="eye"></span> <span id="toggle-digits-label">Show card details</span>
+              </button>
+            </div>
+
+            <section class="panel" aria-labelledby="card-title">
+              <div class="panel-head">
+                <h2 id="card-title">Card details</h2>
+                <span class="badge badge-approved"><span data-icon="check"></span> Active</span>
+              </div>
+              <dl class="details">
+                <div><dt>Card type</dt><dd data-bind="cardTier"></dd></div>
+                <div><dt>Issued</dt><dd data-bind="cardIssued"></dd></div>
+                <div><dt>Linked account</dt><dd class="num notranslate" data-bind="accountNumber"></dd></div>
+                <div><dt>Available balance</dt><dd class="num notranslate" data-bind="available"></dd></div>
+                <div><dt>Currency</dt><dd class="notranslate">USD</dd></div>
+              </dl>
+              <p class="demo-note">
+                <span data-icon="info"></span>
+                <span>This card is part of the demonstration and cannot be used for real purchases.</span>
+              </p>
+            </section>
+          </div>
+        </section>
+
+        <!-- ---------------------------------------------------- Profile -->
+        <section data-view="profile" hidden>
+          <div class="columns columns--even">
+            <section class="panel" aria-labelledby="profile-title">
+              <div class="panel-head">
+                <h2 id="profile-title">Personal details</h2>
+              </div>
+              <form id="profile-form" novalidate>
+                <div class="alert" role="alert" tabindex="-1" hidden></div>
+                <div class="field">
+                  <label for="p-fullName">Full legal name</label>
+                  <input id="p-fullName" name="fullName" type="text" autocomplete="name" maxlength="80" required />
+                </div>
+                <div class="field">
+                  <label for="p-email">Email address</label>
+                  <input id="p-email" name="email" type="email" disabled />
+                  <p class="hint">Your email is your login and cannot be changed here.</p>
+                </div>
+                <div class="field">
+                  <label for="p-phone">Phone number</label>
+                  <input id="p-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required />
+                </div>
+                <div class="field">
+                  <label for="p-country">Country of residence</label>
+                  <select id="p-country" name="country" autocomplete="country" required></select>
+                </div>
+                <button class="btn btn-primary btn-lg" type="submit">Save changes</button>
+              </form>
+            </section>
+
+            <section class="panel" aria-labelledby="password-title">
+              <div class="panel-head">
+                <h2 id="password-title">Change password</h2>
+              </div>
+              <form id="password-form" novalidate>
+                <div class="alert" role="alert" tabindex="-1" hidden></div>
+                <div class="field">
+                  <label for="currentPassword">Current password</label>
+                  <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required />
+                </div>
+                <div class="field">
+                  <label for="newPassword">New password</label>
+                  <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="8" required />
+                  <p class="hint">At least 8 characters.</p>
+                </div>
+                <div class="field">
+                  <label for="confirmPassword">Confirm new password</label>
+                  <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required />
+                </div>
+                <button class="btn btn-primary btn-lg" type="submit">Update password</button>
+              </form>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Live support chat -->
+    <button class="chat-fab" type="button" id="chat-open" aria-label="Open live support chat" aria-expanded="false">
+      <span data-icon="chat"></span>
+      <span class="chat-fab-count num notranslate" id="chat-unread" hidden></span>
+    </button>
+    <section class="chat" id="chat" aria-labelledby="chat-title" hidden>
+      <header class="chat-head">
+        <span class="chat-status" aria-hidden="true"></span>
+        <div>
+          <h2 id="chat-title">Live support</h2>
+          <p>We usually reply within a few minutes.</p>
+        </div>
+        <button class="chat-close" type="button" id="chat-close" aria-label="Close chat"><span data-icon="x"></span></button>
+      </header>
+      <div class="chat-log" id="chat-log" aria-live="polite"></div>
+      <form class="chat-form" id="chat-form">
+        <label class="sr-only" for="chat-input">Message</label>
+        <textarea id="chat-input" name="body" rows="1" maxlength="1000" placeholder="Type your message"></textarea>
+        <button class="btn btn-primary" type="submit" aria-label="Send message"><span data-icon="send"></span></button>
+      </form>
+    </section>
+
+    <dialog id="receipt" aria-labelledby="receipt-title">
+      <div class="receipt-head">
+        <span class="feature-icon" id="receipt-icon"></span>
+        <p class="muted" id="receipt-title">Transaction</p>
+        <p class="receipt-amount num notranslate" id="receipt-amount"></p>
+        <span id="receipt-status"></span>
+      </div>
+      <dl class="details" id="receipt-details"></dl>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" type="button" id="receipt-copy"><span data-icon="copy"></span> Copy reference</button>
+        <button class="btn btn-primary" type="button" id="receipt-close">Done</button>
+      </div>
+    </dialog>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/support.js"></script>
+  </body>
+</html>

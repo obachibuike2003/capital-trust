@@ -1,0 +1,1597 @@
+/* Capital Trust Bank - signed-in app shell and the richer form controls
+   used by registration and the dashboard. Loaded after styles.css and site.css. */
+
+/* ------------------------------------------------------------ Form extras */
+
+.field-row {
+  display: grid;
+  gap: 0 var(--space-4);
+}
+
+.choice-group {
+  border: 0;
+  padding: 0;
+  margin-inline: 0;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.field .choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: var(--space-4);
+  background: #fff;
+  border: 1.5px solid var(--color-border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.choice:hover {
+  border-color: var(--green-600);
+}
+
+.choice input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  opacity: 0;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--green-700);
+  background: var(--green-50);
+  box-shadow: 0 0 0 3px rgba(14, 138, 90, 0.18);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 3px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.choice-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: var(--space-2);
+  color: var(--green-800);
+  background: var(--green-100);
+  border-radius: 12px;
+}
+
+.choice strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.choice small {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-muted-foreground);
+}
+
+.field label.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: 44px;
+  margin: 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.field .check input {
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  flex: none;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: var(--green-700);
+  cursor: pointer;
+}
+
+.button-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+}
+
+.stepper {
+  display: flex;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-5);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+}
+
+.stepper li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  padding-bottom: var(--space-3);
+  border-bottom: 3px solid var(--color-border);
+}
+
+.stepper li span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 50%;
+  background: var(--green-50);
+  border: 1px solid var(--color-border);
+}
+
+.stepper .is-current,
+.stepper .is-done {
+  color: var(--green-900);
+  border-bottom-color: var(--green-700);
+}
+
+.stepper .is-current span,
+.stepper .is-done span {
+  color: #fff;
+  background: var(--green-700);
+  border-color: var(--green-700);
+}
+
+.auth-card--wide {
+  max-width: 600px;
+}
+
+.auth-card h1:focus {
+  outline: none;
+}
+
+/* ------------------------------------------------------------ Shell */
+
+.shell {
+  display: block;
+  background: var(--green-50);
+  padding-bottom: 76px; /* room for the bottom navigation on phones */
+}
+
+.sidebar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  background: var(--green-900);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.sidebar .brand,
+.side-logout {
+  display: none;
+}
+
+.side-nav {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.side-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 60px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #a9cdbb;
+  text-decoration: none;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.side-nav a:hover {
+  color: #fff;
+}
+
+.side-nav a[aria-current='page'] {
+  color: var(--lime);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.topbar h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--green-900);
+}
+
+.topbar .muted {
+  font-size: 0.9rem;
+}
+
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-foreground);
+  text-decoration: none;
+  border-radius: 999px;
+}
+
+.profile-chip-text {
+  display: none;
+  line-height: 1.25;
+}
+
+.profile-chip-text strong {
+  display: block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+.profile-chip-text small {
+  color: var(--color-muted-foreground);
+}
+
+.topbar-logout {
+  padding: 0 12px;
+}
+
+.shell-content {
+  padding: var(--space-4);
+  max-width: 1240px;
+  margin-inline: auto;
+}
+
+/* ------------------------------------------------------------ Overview */
+
+.overview-grid {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.shell .panel,
+.shell .stat {
+  border-radius: 20px;
+}
+
+.shell .panel {
+  margin-bottom: var(--space-4);
+}
+
+.shell .panel h2 {
+  font-size: 1.15rem;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.quick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 600;
+  color: var(--color-foreground);
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.quick:hover {
+  transform: translateY(-2px);
+  border-color: var(--green-200);
+  box-shadow: var(--shadow-md);
+}
+
+.quick-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  color: var(--green-900);
+  background: var(--lime);
+  border-radius: 50%;
+}
+
+.columns--wide-left,
+.columns--even {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ------------------------------------------------------------ Lists */
+
+.tx-list {
+  display: grid;
+}
+
+.tx-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-3) var(--space-2);
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.tx-row:first-child {
+  border-top: 0;
+}
+
+.tx-row:hover {
+  background: var(--green-50);
+}
+
+.tx-row.is-static {
+  cursor: default;
+}
+
+.tx-row.is-static:hover {
+  background: none;
+}
+
+.tx-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  color: var(--color-muted-foreground);
+  background: var(--green-50);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.tx-icon.is-in {
+  color: var(--green-800);
+  background: var(--green-100);
+  border-color: transparent;
+}
+
+.tx-icon .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.tx-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.tx-main strong {
+  display: block;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-main small {
+  font-size: 0.85rem;
+  color: var(--color-muted-foreground);
+}
+
+.tx-row > .badge {
+  display: none;
+}
+
+/* On phones the status sits beside the date instead of in a badge. */
+.tx-status {
+  display: block;
+  font-weight: 600;
+}
+
+.tx-status.is-pending {
+  color: var(--color-pending-fg);
+}
+
+.tx-status.is-approved {
+  color: var(--color-approved-fg);
+}
+
+.tx-status.is-rejected {
+  color: var(--color-rejected-fg);
+}
+
+.tx-amount {
+  flex: none;
+  font-weight: 600;
+}
+
+.details {
+  display: grid;
+  margin: 0;
+}
+
+.details div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.details div:first-child {
+  border-top: 0;
+}
+
+.details dt {
+  color: var(--color-muted-foreground);
+}
+
+.details dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------ History filters */
+
+.filters {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.search {
+  position: relative;
+}
+
+.search .icon {
+  position: absolute;
+  inset-inline-start: 14px;
+  top: 14px;
+  color: var(--color-muted-foreground);
+  pointer-events: none;
+}
+
+.search .input {
+  padding-inline-start: 44px;
+  border-radius: 999px;
+}
+
+.search .input:focus {
+  outline: none;
+  border-color: var(--green-700);
+  box-shadow: 0 0 0 3px rgba(14, 138, 90, 0.25);
+}
+
+.tabs--pill {
+  gap: var(--space-2);
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+.tabs--pill .tab {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.tabs--pill .tab[aria-selected='true'] {
+  color: #fff;
+  background: var(--green-700);
+  border-color: var(--green-700);
+}
+
+/* ------------------------------------------------------------ Card view */
+
+.bank-card--tall {
+  min-height: 250px;
+}
+
+.card-digits {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 5.2vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ Receipt */
+
+.receipt-head {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  text-align: center;
+}
+
+.receipt-amount {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* ------------------------------------------------------------ Breakpoints */
+
+@media (min-width: 600px) {
+  .field-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tx-row > .badge {
+    display: inline-flex;
+  }
+
+  .tx-status {
+    display: none;
+  }
+
+  .profile-chip-text {
+    display: block;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .overview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .overview-grid .bank-card {
+    grid-column: 1 / -1;
+  }
+
+  .filters {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .shell {
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    padding-bottom: 0;
+  }
+
+  .sidebar {
+    position: sticky;
+    inset: 0 auto auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    height: 100vh;
+    padding: var(--space-5) var(--space-4);
+    border-top: 0;
+    background-image: radial-gradient(120% 50% at 0% 100%, rgba(14, 138, 90, 0.45) 0%, transparent 70%);
+  }
+
+  .sidebar .brand {
+    display: inline-flex;
+    margin: 0;
+    padding-inline: var(--space-2);
+    color: #fff;
+  }
+
+  .side-nav {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .side-nav a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    min-height: 48px;
+    padding-inline: var(--space-3);
+    font-size: 1rem;
+    border-radius: 12px;
+  }
+
+  .side-nav a:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .side-nav a[aria-current='page'] {
+    color: var(--green-900);
+    background: var(--lime);
+    font-weight: 600;
+  }
+
+  .side-logout {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 48px;
+    margin-top: auto;
+    padding-inline: var(--space-3);
+    font: inherit;
+    color: #a9cdbb;
+    background: none;
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: color 150ms ease, background-color 150ms ease;
+  }
+
+  .side-logout:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .topbar {
+    padding: var(--space-4) var(--space-6);
+  }
+
+  .topbar h1 {
+    font-size: 1.6rem;
+  }
+
+  .topbar-logout {
+    display: none;
+  }
+
+  .shell-content {
+    padding: var(--space-5) var(--space-6) var(--space-7);
+  }
+
+  .overview-grid {
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  }
+
+  .overview-grid .bank-card {
+    grid-column: auto;
+  }
+
+  .columns--wide-left {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+
+  .columns--even {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shell .columns {
+    gap: var(--space-4);
+  }
+}
+
+/* Keep toasts clear of the bottom navigation on phones. */
+@media (max-width: 1023px) {
+  .shell .toasts {
+    bottom: 88px;
+  }
+}
+
+/* ------------------------------------------------------------ Chart */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border-radius: 3px;
+}
+
+.swatch-in,
+.bar-in {
+  background: #0e8a5a;
+  fill: #0e8a5a;
+}
+
+.swatch-out,
+.bar-out {
+  background: #2f6fd0;
+  fill: #2f6fd0;
+}
+
+.chart {
+  position: relative;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+}
+
+.chart .grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.chart .tick {
+  font-family: var(--font);
+  font-size: 12px;
+  fill: var(--color-muted-foreground);
+}
+
+.chart .hit {
+  fill: transparent;
+  cursor: default;
+  outline: none;
+}
+
+.chart .hit:hover,
+.chart .hit:focus-visible {
+  fill: rgba(11, 107, 71, 0.07);
+}
+
+.chart-tip {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+  min-width: 170px;
+  padding: var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-foreground);
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.chart-tip span {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chart-tip b {
+  margin-inline-start: auto;
+  padding-inline-start: var(--space-3);
+}
+
+.chart-empty {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--color-muted-foreground);
+}
+
+.chart-table {
+  margin-top: var(--space-3);
+}
+
+.chart-table summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 600;
+  color: var(--green-800);
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------ Realistic debit card
+   Sized in container units (cqw) so every detail scales with the card's width. */
+
+.atm {
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 1.586;
+  container-type: inline-size;
+  perspective: 1400px;
+  --atm-ink: #fff;
+  --atm-soft: rgba(255, 255, 255, 0.72);
+  --atm-base: linear-gradient(135deg, #0b6b47 0%, #053b2a 55%, #0a4d36 100%);
+  --atm-emboss: 0 0.25cqw 0.3cqw rgba(0, 0, 0, 0.45), 0 -0.15cqw 0.2cqw rgba(255, 255, 255, 0.22);
+}
+
+.atm--gold {
+  --atm-ink: #2b2204;
+  --atm-soft: rgba(43, 34, 4, 0.74);
+  --atm-base: linear-gradient(125deg, #8f6f1e 0%, #e7cd78 22%, #b48d2c 45%, #f4e3a3 62%, #a8842a 82%, #dcc06a 100%);
+  --atm-emboss: 0 0.2cqw 0.2cqw rgba(255, 255, 255, 0.55), 0 -0.15cqw 0.2cqw rgba(74, 56, 6, 0.4);
+}
+
+.atm--platinum {
+  --atm-base: linear-gradient(125deg, #1b201f 0%, #5b6663 24%, #262c2b 46%, #7c8885 64%, #232827 84%, #4a5451 100%);
+}
+
+.atm-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 750ms cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.atm.is-flipped .atm-inner {
+  transform: rotateY(180deg);
+}
+
+.atm-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6cqw 6.5cqw 5.5cqw;
+  overflow: hidden;
+  color: var(--atm-ink);
+  background: var(--atm-base);
+  border-radius: 4.4cqw;
+  box-shadow:
+    0 6cqw 12cqw rgba(5, 59, 42, 0.3),
+    inset 0 0 0 0.25cqw rgba(255, 255, 255, 0.16),
+    inset 0 0.4cqw 0.5cqw rgba(255, 255, 255, 0.25);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Fine engraved lines plus a soft arc, like the print on a real card. */
+.atm-face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.05) 0 0.3cqw, transparent 0.3cqw 2.2cqw),
+    radial-gradient(90cqw 60cqw at 108% 118%, rgba(255, 255, 255, 0.16) 0 49%, transparent 50%),
+    radial-gradient(70cqw 46cqw at 108% 118%, rgba(0, 0, 0, 0.14) 0 49%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Diagonal sheen that catches the light. */
+.atm-face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(112deg, transparent 28%, rgba(255, 255, 255, 0.22) 44%, rgba(255, 255, 255, 0.04) 52%, transparent 62%);
+  pointer-events: none;
+}
+
+.atm-face > * {
+  position: relative;
+  z-index: 1;
+}
+
+.atm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3cqw;
+}
+
+.atm-row--start {
+  justify-content: flex-start;
+}
+
+.atm-row--end {
+  align-items: flex-end;
+}
+
+.atm-bank {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.8cqw;
+  font-family: var(--font-display);
+  font-size: 4.6cqw;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.atm-logo {
+  width: 9cqw;
+  height: 9cqw;
+  flex: none;
+  object-fit: contain;
+}
+
+.atm-tier {
+  font-size: 2.9cqw;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--atm-soft);
+}
+
+.atm-chip {
+  width: 12.5cqw;
+  height: auto;
+  filter: drop-shadow(0 0.3cqw 0.4cqw rgba(0, 0, 0, 0.3));
+}
+
+.atm-wave {
+  width: 7cqw;
+  height: 7cqw;
+  color: var(--atm-soft);
+}
+
+.atm-number {
+  display: flex;
+  gap: 3.4cqw;
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-size: 6.9cqw;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: var(--atm-emboss);
+}
+
+.atm-field {
+  display: grid;
+  gap: 0.6cqw;
+  min-width: 0;
+}
+
+.atm-field:first-child {
+  flex: 1;
+}
+
+.atm-field small {
+  font-size: 2.1cqw;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--atm-soft);
+}
+
+.atm-field span {
+  overflow: hidden;
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-size: 3.7cqw;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: var(--atm-emboss);
+}
+
+/* Holographic seal with the card scheme label under it. */
+.atm-network {
+  display: grid;
+  justify-items: center;
+  gap: 0.6cqw;
+}
+
+.atm-network i {
+  width: 9.5cqw;
+  height: 9.5cqw;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 38%, rgba(255, 255, 255, 0.5) 39% 42%, transparent 43%),
+    conic-gradient(from 20deg, #d7f5c4, #9ed8ff, #e3c8ff, #ffe7a8, #b9f0d2, #d7f5c4);
+  box-shadow: inset 0 0 0 0.3cqw rgba(255, 255, 255, 0.55), 0 0.3cqw 0.6cqw rgba(0, 0, 0, 0.25);
+  opacity: 0.92;
+}
+
+.atm-network b {
+  font-size: 2.3cqw;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Back of the card */
+.atm-back {
+  padding: 7cqw 0 5.5cqw;
+  transform: rotateY(180deg);
+}
+
+.atm-back::after {
+  content: none;
+}
+
+.atm-stripe {
+  height: 13cqw;
+  background: linear-gradient(180deg, #0c0f0e, #2a2f2e 45%, #0c0f0e);
+}
+
+.atm-sign {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+  margin-inline: 6.5cqw;
+}
+
+.atm-sign-strip {
+  flex: 1;
+  height: 9.5cqw;
+  padding-inline: 3cqw;
+  overflow: hidden;
+  font-family: 'Segoe Script', 'Brush Script MT', cursive;
+  font-size: 4.4cqw;
+  line-height: 9.5cqw;
+  text-transform: capitalize;
+  white-space: nowrap;
+  color: #1b2a55;
+  background: repeating-linear-gradient(0deg, #f6f4ea 0 1.1cqw, #e7e4d4 1.1cqw 1.4cqw);
+  border-radius: 0.8cqw;
+}
+
+.atm-cvv {
+  min-width: 15cqw;
+  height: 9.5cqw;
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-size: 4.6cqw;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 9.5cqw;
+  text-align: center;
+  color: #111;
+  background: #fff;
+  border-radius: 0.8cqw;
+}
+
+.atm-small {
+  margin-inline: 6.5cqw;
+  font-size: 2.1cqw;
+  line-height: 1.45;
+  color: var(--atm-soft);
+}
+
+.atm-back .atm-row {
+  margin-inline: 6.5cqw;
+}
+
+.atm-back .atm-bank {
+  font-size: 3.6cqw;
+}
+
+.atm.is-locked .atm-face {
+  filter: grayscale(0.7);
+  opacity: 0.75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atm-inner {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------ Card tiers */
+
+.bank-card--gold {
+  color: #2b2203;
+  background: #d9b655;
+  background-image:
+    radial-gradient(90% 120% at 100% 0%, #f6e7a8 0%, transparent 60%),
+    radial-gradient(60% 80% at 0% 100%, rgba(122, 86, 0, 0.35) 0%, transparent 70%);
+}
+
+.bank-card--gold .label,
+.bank-card--gold .card-holder {
+  color: #4a3a06;
+}
+
+.bank-card--gold .chip {
+  background: linear-gradient(135deg, #fff6cf, #b58f2a);
+}
+
+.bank-card--platinum {
+  background: #1d2a26;
+  background-image:
+    radial-gradient(90% 120% at 100% 0%, #5c6f69 0%, transparent 60%),
+    radial-gradient(60% 80% at 0% 100%, rgba(168, 235, 122, 0.18) 0%, transparent 70%);
+}
+
+.bank-card--platinum .chip {
+  background: linear-gradient(135deg, #f1f4f3, #9aa8a3);
+}
+
+.bank-card--locked {
+  filter: grayscale(0.55);
+  opacity: 0.8;
+}
+
+.bank-card--locked .card-bottom {
+  align-items: center;
+}
+
+.tiers {
+  display: grid;
+  gap: var(--space-2);
+  margin-block: var(--space-4);
+}
+
+.tier {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--green-50);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.tier-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.tier-swatch {
+  width: 36px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--green-700);
+}
+
+.tier-gold .tier-swatch {
+  background: linear-gradient(135deg, #f6e7a8, #c9a23a);
+}
+
+.tier-platinum .tier-swatch {
+  background: linear-gradient(135deg, #5c6f69, #1d2a26);
+}
+
+/* Single card price with the old price struck through. */
+.card-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-4);
+  margin-bottom: var(--space-2);
+  background: var(--green-50);
+  border: 1px solid var(--green-200);
+  border-radius: 14px;
+}
+
+.card-price span {
+  flex-basis: 100%;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+.card-price s {
+  font-size: 1.1rem;
+  color: var(--color-muted-foreground);
+}
+
+.card-price strong {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--green-800);
+}
+
+.tiers .field-label {
+  margin: var(--space-2) 0 0;
+}
+
+/* ------------------------------------------------------------ Live support chat */
+
+.chat-fab {
+  position: fixed;
+  inset-inline-end: var(--space-4);
+  bottom: 88px;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  color: var(--green-900);
+  background: var(--lime);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 12px 30px rgba(5, 59, 42, 0.3);
+  cursor: pointer;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.chat-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(5, 59, 42, 0.36);
+}
+
+.chat-fab .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.chat-fab-count {
+  position: absolute;
+  top: -4px;
+  inset-inline-end: -4px;
+  min-width: 22px;
+  padding: 0 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 22px;
+  color: #fff;
+  background: var(--color-destructive);
+  border-radius: 11px;
+}
+
+.chat {
+  position: fixed;
+  inset: auto var(--space-3) 152px var(--space-3);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  max-height: min(560px, calc(100vh - 180px));
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(5, 59, 42, 0.28);
+  overflow: hidden;
+  animation: toast-in 220ms ease-out;
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: #fff;
+  background: var(--green-800);
+}
+
+.chat-head h2 {
+  font-size: 1.05rem;
+}
+
+.chat-head p {
+  font-size: 0.85rem;
+  color: var(--green-200);
+}
+
+.chat-head > div {
+  flex: 1;
+}
+
+.chat-status {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 0 4px rgba(168, 235, 122, 0.25);
+}
+
+.chat-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: #fff;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.chat-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.chat-log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 220px;
+  padding: var(--space-4);
+  overflow-y: auto;
+  background: var(--green-50);
+}
+
+.chat-empty {
+  margin: auto;
+  text-align: center;
+  color: var(--color-muted-foreground);
+}
+
+.bubble {
+  align-self: flex-start;
+  max-width: 82%;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 16px 16px 16px 4px;
+}
+
+.bubble p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bubble small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--color-muted-foreground);
+}
+
+.bubble.is-mine {
+  align-self: flex-end;
+  color: #fff;
+  background: var(--green-700);
+  border-color: var(--green-700);
+  border-radius: 16px 16px 4px 16px;
+}
+
+.bubble.is-mine small {
+  color: var(--green-100);
+}
+
+.chat-form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  background: #fff;
+}
+
+.chat-form textarea {
+  flex: 1;
+  min-height: 44px;
+  max-height: 120px;
+  padding: 10px 14px;
+  font: inherit;
+  color: var(--color-foreground);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 14px;
+  resize: none;
+  field-sizing: content;
+}
+
+.chat-form textarea:focus {
+  outline: none;
+  border-color: var(--green-700);
+  box-shadow: 0 0 0 3px rgba(14, 138, 90, 0.25);
+}
+
+.chat-form .btn {
+  width: 44px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.chat-form .btn:hover .icon {
+  transform: none;
+}
+
+/* Name and email asked once, before a visitor's first message. */
+.chat-form:has(.chat-intro:not([hidden])) {
+  flex-wrap: wrap;
+}
+
+.chat-intro {
+  display: grid;
+  gap: 4px;
+  flex-basis: 100%;
+  padding-bottom: var(--space-2);
+}
+
+.chat-intro label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.chat-intro input {
+  min-height: 44px;
+  padding: 8px 14px;
+  font: inherit;
+  color: var(--color-foreground);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 14px;
+}
+
+.chat-intro input:focus {
+  outline: none;
+  border-color: var(--green-700);
+  box-shadow: 0 0 0 3px rgba(14, 138, 90, 0.25);
+}
+
+/* Public pages have no bottom navigation, so the chat sits lower. */
+body:not(.shell) .chat-fab {
+  bottom: var(--space-4);
+}
+
+body:not(.shell) .chat {
+  bottom: 84px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0 6px;
+  margin-inline-start: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 18px;
+  vertical-align: middle;
+  color: var(--color-pending-fg);
+  background: var(--color-pending-bg);
+  border-radius: 4px;
+}
+
+/* ------------------------------------------------------------ Admin support inbox */
+
+.inbox {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.threads {
+  display: grid;
+  align-content: start;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.thread {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-3);
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.thread:first-child {
+  border-top: 0;
+}
+
+.thread:hover,
+.thread.is-open {
+  background: var(--green-50);
+}
+
+.thread-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.thread-main strong,
+.thread-main small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thread-main small {
+  color: var(--color-muted-foreground);
+}
+
+.convo {
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+  max-height: 600px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.convo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.convo-head small {
+  display: block;
+  color: var(--color-muted-foreground);
+}
+
+.convo .empty {
+  margin: auto;
+}
+
+.link-btn {
+  display: block;
+  min-height: 32px;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-destructive);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+@media (min-width: 600px) {
+  .chat {
+    inset: auto var(--space-4) 152px auto;
+    width: 380px;
+  }
+}
+
+@media (min-width: 900px) {
+  .inbox {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
+
+  .threads {
+    max-height: 600px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .chat-fab {
+    bottom: var(--space-5);
+    inset-inline-end: var(--space-5);
+  }
+
+  .chat {
+    bottom: 96px;
+    inset-inline-end: var(--space-5);
+  }
+}

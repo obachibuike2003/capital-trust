@@ -1,0 +1,455 @@
+/* Capital Trust Bank - motion layer. Loaded last on every page.
+   Only transform and opacity are animated. The reduced-motion rule in
+   styles.css shortens every animation here to nothing. */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes sheen {
+  0%,
+  55% {
+    transform: translateX(-70%);
+  }
+  100% {
+    transform: translateX(70%);
+  }
+}
+
+@keyframes grow-bar {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes ring {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes shine {
+  to {
+    transform: translateX(260%) skewX(-20deg);
+  }
+}
+
+/* ------------------------------------------------------------ Buttons */
+
+.btn-primary,
+.btn-lime {
+  position: relative;
+  overflow: hidden;
+}
+
+/* A band of light crosses the button on hover. */
+.btn-primary::after,
+.btn-lime::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: -60%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(0) skewX(-20deg);
+  pointer-events: none;
+}
+
+.btn-primary:hover::after,
+.btn-lime:hover::after {
+  animation: shine 700ms ease-out;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* ------------------------------------------------------------ Header */
+
+.main-nav .container,
+.main-nav .brand-mark {
+  transition: min-height 250ms ease, width 250ms ease, height 250ms ease;
+}
+
+.main-nav {
+  transition: box-shadow 250ms ease;
+}
+
+.main-nav.is-scrolled {
+  box-shadow: 0 1px 0 var(--color-border), 0 12px 32px rgba(5, 59, 42, 0.14);
+}
+
+.main-nav.is-scrolled .container {
+  min-height: 62px;
+}
+
+.main-nav.is-scrolled .brand-mark {
+  width: 34px;
+  height: 34px;
+}
+
+.brand-mark {
+  transition: transform 300ms ease;
+}
+
+.brand:hover .brand-mark {
+  transform: rotate(-6deg) scale(1.06);
+}
+
+/* ------------------------------------------------------------ Hero slider */
+
+.slide.is-active .slide-copy > * {
+  animation: rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.slide.is-active .slide-copy > :nth-child(1) {
+  animation-delay: 150ms;
+}
+
+.slide.is-active .slide-copy > :nth-child(2) {
+  animation-delay: 260ms;
+}
+
+.slide.is-active .slide-copy > :nth-child(3) {
+  animation-delay: 380ms;
+}
+
+.slide.is-active .slide-copy > :nth-child(4) {
+  animation-delay: 500ms;
+}
+
+.quick-links a {
+  animation: rise 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.quick-links a:nth-child(1) {
+  animation-delay: 500ms;
+}
+
+.quick-links a:nth-child(2) {
+  animation-delay: 580ms;
+}
+
+.quick-links a:nth-child(3) {
+  animation-delay: 660ms;
+}
+
+.quick-links a:nth-child(4) {
+  animation-delay: 740ms;
+}
+
+.quick-links a:nth-child(5) {
+  animation-delay: 820ms;
+}
+
+.quick-links .quick-icon {
+  transition: transform 300ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.quick-links a:hover .quick-icon {
+  transform: scale(1.12) rotate(-6deg);
+}
+
+/* ------------------------------------------------------------ Scroll reveals */
+
+/* Photos settle into place instead of only fading. */
+.js .split-media[data-reveal] {
+  transform: scale(0.94);
+}
+
+.js .split-media[data-reveal].is-visible {
+  transform: none;
+}
+
+.split-badge {
+  transition: opacity 500ms ease 450ms, transform 500ms cubic-bezier(0.3, 1.4, 0.5, 1) 450ms;
+}
+
+.js [data-reveal]:not(.is-visible) .split-badge {
+  opacity: 0;
+  transform: translateY(16px) scale(0.9);
+}
+
+.js .checklist li {
+  transition: opacity 500ms ease, transform 500ms ease;
+}
+
+.js [data-reveal]:not(.is-visible) .checklist li {
+  opacity: 0;
+  transform: translateX(-14px);
+}
+
+.js .checklist li:nth-child(2) {
+  transition-delay: 120ms;
+}
+
+.js .checklist li:nth-child(3) {
+  transition-delay: 240ms;
+}
+
+.figures div {
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+
+.js .figures:not(.is-counted) div {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.figures div:nth-child(2) {
+  transition-delay: 100ms;
+}
+
+.figures div:nth-child(3) {
+  transition-delay: 200ms;
+}
+
+.figures div:nth-child(4) {
+  transition-delay: 300ms;
+}
+
+.faq details[open] p {
+  animation: rise 350ms ease-out both;
+}
+
+.step::before {
+  transition: color 300ms ease, transform 300ms ease;
+}
+
+.step:hover::before {
+  color: var(--green-600);
+  transform: translateX(4px);
+}
+
+/* ------------------------------------------------------------ Bank cards */
+
+/* The three cards start stacked and spread out as they scroll into view. */
+.js .card-fan[data-reveal]:not(.is-visible) .atm:nth-child(n) {
+  transform: translateY(64px) rotate(0deg) scale(0.94);
+}
+
+.card-fan .atm {
+  transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-fan .atm:nth-child(2) {
+  transition-delay: 90ms;
+}
+
+.card-fan .atm:nth-child(3) {
+  transition-delay: 180ms;
+}
+
+/* Light sweeping across the card face every few seconds. */
+.atm-front::after {
+  inset: 0 -40%;
+  animation: sheen 5.500s ease-in-out infinite;
+}
+
+.atm-network i {
+  animation: spin 14s linear infinite;
+}
+
+/* The customer's own card leans toward the pointer. */
+#card-visual .atm,
+#card-locked .atm {
+  transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 200ms ease-out;
+}
+
+.bank-card::after {
+  animation: bob 7s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------ Sign-in screens */
+
+.auth-card {
+  animation: rise 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.auth-side img {
+  animation: fade 900ms ease both;
+}
+
+.auth-side-copy > * {
+  animation: rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) 250ms both;
+}
+
+.auth-side-copy > :nth-child(2) {
+  animation-delay: 400ms;
+}
+
+[data-step]:not([hidden]) {
+  animation: slide-in 350ms ease-out both;
+}
+
+.stepper li,
+.stepper li span {
+  transition: color 300ms ease, border-color 300ms ease, background-color 300ms ease;
+}
+
+.field .error,
+.alert:not([hidden]) {
+  animation: pop 250ms ease-out both;
+}
+
+/* ------------------------------------------------------------ Dashboard */
+
+[data-view]:not([hidden]) {
+  animation: rise 400ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.overview-grid > *,
+.stats-row > * {
+  animation: rise 550ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.overview-grid > :nth-child(2),
+.stats-row > :nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.overview-grid > :nth-child(3),
+.stats-row > :nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.overview-grid > :nth-child(4),
+.stats-row > :nth-child(4) {
+  animation-delay: 240ms;
+}
+
+.stat {
+  transition: transform 250ms ease, box-shadow 250ms ease;
+}
+
+.stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon,
+.quick-icon,
+.tx-icon {
+  transition: transform 300ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.stat:hover .stat-icon,
+.quick:hover .quick-icon,
+.tx-row:hover .tx-icon {
+  transform: scale(1.1) rotate(-6deg);
+}
+
+.side-nav a {
+  transition: color 200ms ease, background-color 200ms ease, transform 200ms ease;
+}
+
+.side-nav a:active {
+  transform: scale(0.97);
+}
+
+/* Bars rise from the axis the first time the chart is drawn. */
+.chart.is-fresh .bar-in,
+.chart.is-fresh .bar-out {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: grow-bar 800ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.chart.is-fresh .bar-out {
+  animation-delay: 120ms;
+}
+
+.chart-tip:not([hidden]) {
+  animation: fade 150ms ease-out both;
+}
+
+dialog[open] {
+  animation: pop 250ms ease-out both;
+}
+
+dialog::backdrop {
+  animation: fade 250ms ease-out both;
+}
+
+/* ------------------------------------------------------------ Live support */
+
+.bubble:last-child {
+  animation: pop 250ms ease-out both;
+}
+
+/* A ring pulses from the chat button while a reply is waiting. */
+.chat-fab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--green-600);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-fab:has(.chat-fab-count:not([hidden]))::before {
+  animation: ring 1.600s ease-out infinite;
+}
+
+.chat-fab .icon {
+  transition: transform 300ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.chat-fab:hover .icon {
+  transform: scale(1.12) rotate(-8deg);
+}
+
+/* Ambient loops stop for anyone who asks for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .atm-front::after,
+  .atm-network i,
+  .bank-card::after,
+  .chat-fab::before {
+    animation: none !important;
+  }
+
+  .btn:hover,
+  .stat:hover {
+    transform: none;
+  }
+}

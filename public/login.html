@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Log in - Capital Trust Bank</title>
+    <link rel="icon" type="image/png" href="/img/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/motion.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand notranslate" href="/" translate="no">
+          <img class="brand-mark" src="/img/logo-mark.png" alt="" width="36" height="36" />
+          Capital Trust Bank
+        </a>
+        <div class="header-actions">
+          <div data-lang-switch></div>
+          <a class="btn btn-secondary" href="/register">Open account</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="auth">
+      <aside class="auth-side">
+        <img src="/img/auth-login.jpg" alt="" width="900" height="1300" />
+        <div class="auth-side-copy">
+          <h2>Welcome back to banking that keeps you in control.</h2>
+          <ul class="hero-points">
+            <li><span data-icon="check"></span> See your balance at a glance</li>
+            <li><span data-icon="check"></span> Track every request to approval</li>
+            <li><span data-icon="check"></span> Available in 133 languages</li>
+          </ul>
+        </div>
+      </aside>
+      <div class="auth-main">
+      <div class="auth-card">
+        <h1>Welcome back</h1>
+        <p class="sub">Log in to see your balance and transactions.</p>
+
+        <form id="auth-form" data-endpoint="/api/login" novalidate>
+          <div class="alert" role="alert" tabindex="-1" hidden></div>
+
+          <div class="field">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required />
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input id="password" name="password" type="password" autocomplete="current-password" required />
+              <button class="password-toggle" type="button" aria-pressed="false" aria-label="Show password">Show</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-lg btn-block" type="submit">Log in</button>
+        </form>
+
+        <p class="auth-foot">New to Capital Trust Bank? <a href="/register">Open an account</a></p>
+      </div>
+      </div>
+    </main>
+
+    <footer class="site-footer site-footer--slim">
+      <div class="container footer-base">
+        <span>&copy; <span class="notranslate">2026 Capital Trust Bank</span></span>
+        <span>Demonstration site. No real money is held or moved.</span>
+      </div>
+    </footer>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/support.js" data-mode="visitor"></script>
+  </body>
+</html>

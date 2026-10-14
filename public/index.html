@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Capital Trust Bank - Personal, business and online banking</title>
+    <meta name="description" content="Capital Trust Bank demo: personal and business accounts, cards, transfers and live support in 133 languages." />
+    <link rel="icon" type="image/png" href="/img/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/home.css" />
+    <link rel="stylesheet" href="/css/motion.css" />
+  </head>
+  <body>
+    <div class="utility">
+      <div class="container">
+        <p><span data-icon="info"></span> Demonstration site. No real money is held or moved.</p>
+        <div class="utility-links">
+          <a href="#help">Help and support</a>
+          <a href="#security">Security</a>
+          <div data-lang-switch></div>
+        </div>
+      </div>
+    </div>
+
+    <header class="site-header main-nav">
+      <div class="container">
+        <a class="brand notranslate" href="/" translate="no">
+          <img class="brand-mark" src="/img/logo-mark.png" alt="" width="40" height="40" />
+          Capital Trust Bank
+        </a>
+        <button class="menu-toggle" type="button" id="menu-toggle" aria-expanded="false" aria-controls="main-menu">
+          <span data-icon="menu"></span><span class="sr-only">Menu</span>
+        </button>
+        <nav class="nav-links" id="main-menu" aria-label="Main">
+          <a href="#personal">Personal</a>
+          <a href="#business">Business</a>
+          <a href="#cards">Cards</a>
+          <a href="#loans">Loans</a>
+          <a href="#online">Online banking</a>
+          <a href="#help">Help</a>
+        </nav>
+        <div class="header-actions">
+          <a class="btn btn-secondary" href="/login" data-guest><span data-icon="lock"></span> Log in</a>
+          <a class="btn btn-primary" href="/register" data-guest>Open an account</a>
+          <a class="btn btn-primary" href="/dashboard" data-member hidden>My account</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ---------------------------------------------------- Hero slider -->
+      <section class="slider" id="slider" aria-roledescription="carousel" aria-label="Featured">
+        <div class="slide is-active" role="group" aria-roledescription="slide" aria-label="1 of 3">
+          <img src="/img/slide-pay.jpg" alt="" width="1800" height="900" fetchpriority="high" />
+          <div class="container">
+            <div class="slide-copy">
+              <span class="slide-tag">Personal banking</span>
+              <h1>Banking that keeps you in control</h1>
+              <p>Open an account in minutes, send money in a few taps and follow every transaction from start to finish.</p>
+              <div class="hero-cta">
+                <a class="btn btn-lime btn-lg" href="/register">Open an account <span data-icon="arrow-right"></span></a>
+                <a class="btn btn-outline-light btn-lg" href="#personal">Explore accounts</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide" role="group" aria-roledescription="slide" aria-label="2 of 3" inert>
+          <img src="/img/slide-family.jpg" alt="" width="1800" height="900" loading="lazy" />
+          <div class="container">
+            <div class="slide-copy">
+              <span class="slide-tag">Savings</span>
+              <h2>Save for the moments that matter</h2>
+              <p>Put money aside in a savings account and watch your balance grow, with everything visible in one place.</p>
+              <div class="hero-cta">
+                <a class="btn btn-lime btn-lg" href="/register">Start saving <span data-icon="arrow-right"></span></a>
+                <a class="btn btn-outline-light btn-lg" href="#personal">See savings accounts</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide" role="group" aria-roledescription="slide" aria-label="3 of 3" inert>
+          <img src="/img/slide-business.jpg" alt="" width="1800" height="900" loading="lazy" />
+          <div class="container">
+            <div class="slide-copy">
+              <span class="slide-tag">Business banking</span>
+              <h2>Banking built around your business</h2>
+              <p>A business account, payments to suppliers and a support team you can reach in live chat.</p>
+              <div class="hero-cta">
+                <a class="btn btn-lime btn-lg" href="/register">Open a business account <span data-icon="arrow-right"></span></a>
+                <a class="btn btn-outline-light btn-lg" href="#business">Business banking</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slider-controls">
+          <div class="container">
+            <button type="button" id="slide-prev" aria-label="Previous slide"><span data-icon="chevron-left"></span></button>
+            <div class="slider-dots" id="slide-dots"></div>
+            <button type="button" id="slide-next" aria-label="Next slide"><span data-icon="chevron-right"></span></button>
+            <button type="button" id="slide-pause" aria-label="Pause slides" aria-pressed="false"><span data-icon="pause"></span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Quick links -->
+      <section class="quick-links" aria-label="Popular tasks">
+        <div class="container">
+          <a href="/register"><span class="quick-icon"><span data-icon="user"></span></span><span><strong>Open an account</strong><small>Ready in minutes</small></span></a>
+          <a href="/login"><span class="quick-icon"><span data-icon="send"></span></span><span><strong>Send money</strong><small>To any account</small></span></a>
+          <a href="#cards"><span class="quick-icon"><span data-icon="card"></span></span><span><strong>Order a card</strong><small>Now $950</small></span></a>
+          <a href="#loans"><span class="quick-icon"><span data-icon="home"></span></span><span><strong>Loans</strong><small>Home, auto, personal</small></span></a>
+          <a href="#help" data-open-support=""><span class="quick-icon"><span data-icon="chat"></span></span><span><strong>Live support</strong><small>Chat with our team</small></span></a>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Personal -->
+      <section class="section" id="personal">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Personal banking</span>
+            <h2>An account for every part of your life</h2>
+            <p>Choose the account that fits how you use your money. You can open any of them online.</p>
+          </div>
+          <div class="products">
+            <article class="product" data-reveal>
+              <img src="/img/current.jpg" alt="" width="900" height="650" loading="lazy" />
+              <div class="product-body">
+                <h3>Current account</h3>
+                <p>For everyday money: get paid, send transfers and withdraw whenever you need to.</p>
+                <a class="more" href="/register">Open a current account <span data-icon="arrow-right"></span></a>
+              </div>
+            </article>
+            <article class="product" data-reveal style="--delay: 100ms">
+              <img src="/img/savings-wide.jpg" alt="" width="900" height="650" loading="lazy" />
+              <div class="product-body">
+                <h3>Savings account</h3>
+                <p>Keep money aside for the things you are planning and track it separately from your spending.</p>
+                <a class="more" href="/register">Open a savings account <span data-icon="arrow-right"></span></a>
+              </div>
+            </article>
+            <article class="product" data-reveal style="--delay: 200ms">
+              <img src="/img/joint.jpg" alt="" width="900" height="650" loading="lazy" />
+              <div class="product-body">
+                <h3>Joint account</h3>
+                <p>Manage shared bills and goals with a partner, with one balance you can both follow.</p>
+                <a class="more" href="/register">Open a joint account <span data-icon="arrow-right"></span></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Figures -->
+      <section class="figures" aria-label="Capital Trust Bank at a glance">
+        <div class="container">
+          <div><strong class="num notranslate">4</strong><span>Account types</span></div>
+          <div><strong class="num notranslate">3</strong><span>Card options</span></div>
+          <div><strong class="num notranslate">133</strong><span>Languages</span></div>
+          <div><strong class="num notranslate">200+</strong><span>Countries and territories</span></div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Cards -->
+      <section class="section" id="cards">
+        <div class="container split">
+          <div data-reveal>
+            <span class="eyebrow">Cards</span>
+            <h2>A card that matches the way you bank</h2>
+            <p class="lead">One card, one price, in the design you prefer. Order yours in live support and our team will issue it to your account.</p>
+            <div class="tiers">
+              <div class="card-price">
+                <span>Card price</span>
+                <s class="num notranslate">$1,100.00</s>
+                <strong class="num notranslate">$950.00</strong>
+              </div>
+              <p class="field-label">Choose your design</p>
+              <div class="tier"><span class="tier-swatch"></span><span class="tier-name">Classic</span></div>
+              <div class="tier tier-gold"><span class="tier-swatch"></span><span class="tier-name">Gold</span></div>
+              <div class="tier tier-platinum"><span class="tier-swatch"></span><span class="tier-name">Platinum</span></div>
+            </div>
+            <a class="btn btn-primary btn-lg" href="/register">Get your card <span data-icon="arrow-right"></span></a>
+          </div>
+
+          <div class="card-fan" data-reveal style="--delay: 120ms" aria-hidden="true">
+            <div data-atm="platinum" data-number="5399204418628842" data-holder="CARLOS RIVERA" data-expiry="08/30"></div>
+            <div data-atm="gold" data-number="5399710266034977" data-holder="SOFIA MARTINEZ" data-expiry="10/30"></div>
+            <div data-atm="classic" data-number="5399153390472150" data-holder="EMILY CARTER" data-expiry="03/31"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Business -->
+      <section class="section section-tint" id="business">
+        <div class="container split">
+          <div class="split-media" data-reveal>
+            <img src="/img/business.jpg" alt="A team meeting around a table with laptops" width="1100" height="900" loading="lazy" />
+            <div class="split-badge" aria-hidden="true">
+              <span class="feature-icon"><span data-icon="briefcase"></span></span>
+              Business accounts
+            </div>
+          </div>
+          <div data-reveal style="--delay: 120ms">
+            <span class="eyebrow">Business banking</span>
+            <h2>Keep your company's money moving</h2>
+            <p class="lead">A dedicated business account with the tools to pay, get paid and stay on top of every transaction.</p>
+            <ul class="checklist">
+              <li>
+                <span class="tick"><span data-icon="check"></span></span>
+                <div><strong>Pay suppliers and staff</strong><span>Send transfers to any account and save the people you pay most.</span></div>
+              </li>
+              <li>
+                <span class="tick"><span data-icon="check"></span></span>
+                <div><strong>A clear record</strong><span>Every payment has a reference and a receipt you can search for later.</span></div>
+              </li>
+              <li>
+                <span class="tick"><span data-icon="check"></span></span>
+                <div><strong>Help when you need it</strong><span>Reach our team in live chat from your dashboard.</span></div>
+              </li>
+            </ul>
+            <a class="btn btn-primary btn-lg" href="/register">Open a business account <span data-icon="arrow-right"></span></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Loans -->
+      <section class="section" id="loans">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Loans</span>
+            <h2>Borrowing for your next step</h2>
+            <p>Tell us what you are planning and our team will talk you through the options in live support.</p>
+          </div>
+          <div class="products">
+            <article class="product" data-reveal>
+              <img src="/img/loan-home.jpg" alt="" width="900" height="650" loading="lazy" />
+              <div class="product-body">
+                <h3>Home loans</h3>
+                <p>Buying your first home or moving to the next one.</p>
+                <a class="more" href="#help" data-open-support="Hello, I would like to ask about a loan.">Talk to our team <span data-icon="arrow-right"></span></a>
+              </div>
+            </article>
+            <article class="product" data-reveal style="--delay: 100ms">
+              <img src="/img/loan-auto.jpg" alt="" width="900" height="650" loading="lazy" />
+              <div class="product-body">
+                <h3>Auto loans</h3>
+                <p>Spread the cost of a new or used car.</p>
+                <a class="more" href="#help" data-open-support="Hello, I would like to ask about a loan.">Talk to our team <span data-icon="arrow-right"></span></a>
+              </div>
+            </article>
+            <article class="product" data-reveal style="--delay: 200ms">
+              <img src="/img/loan-personal.jpg" alt="" width="900" height="650" loading="lazy" />
+              <div class="product-body">
+                <h3>Personal loans</h3>
+                <p>For planned costs such as study, travel or home improvements.</p>
+                <a class="more" href="#help" data-open-support="Hello, I would like to ask about a loan.">Talk to our team <span data-icon="arrow-right"></span></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Online banking -->
+      <section class="section section-dark" id="online">
+        <div class="container">
+          <div class="section-head center" data-reveal>
+            <span class="eyebrow">Online banking</span>
+            <h2>Your whole account on one screen</h2>
+            <p>Balance, payments, card, statement and live support, on your phone or your computer.</p>
+          </div>
+
+          <div class="preview" data-reveal aria-hidden="true">
+            <div class="preview-bar">
+              <i></i><i></i><i></i>
+              <span class="notranslate">capitaltrust.bank/dashboard</span>
+            </div>
+            <div class="preview-body">
+              <div class="bank-card">
+                <div class="card-top"><span class="notranslate">Capital Trust</span><span class="chip"></span></div>
+                <div>
+                  <p class="label">Total balance</p>
+                  <p class="amount num notranslate">$12,480.00</p>
+                </div>
+                <div class="card-bottom">
+                  <span class="card-number num notranslate">4821 0937 15</span>
+                  <span class="card-holder notranslate">Sofia Martinez</span>
+                </div>
+              </div>
+              <div class="preview-list">
+                <div class="preview-row">
+                  <span class="round"><span data-icon="arrow-down"></span></span>
+                  <span class="who">Money added<small>Today, 09:12</small></span>
+                  <span class="badge badge-approved"><span data-icon="check"></span> Completed</span>
+                  <strong class="num notranslate amount-in">+$500.00</strong>
+                </div>
+                <div class="preview-row">
+                  <span class="round"><span data-icon="send"></span></span>
+                  <span class="who">Transfer to Carlos Rivera<small>Today, 08:40</small></span>
+                  <span class="badge badge-pending"><span data-icon="clock"></span> Processing</span>
+                  <strong class="num notranslate">-$120.00</strong>
+                </div>
+                <div class="preview-row">
+                  <span class="round"><span data-icon="arrow-up"></span></span>
+                  <span class="who">Withdrawal<small>Yesterday, 17:05</small></span>
+                  <span class="badge badge-approved"><span data-icon="check"></span> Completed</span>
+                  <strong class="num notranslate">-$60.00</strong>
+                </div>
+                <div class="preview-row">
+                  <span class="round"><span data-icon="arrow-down"></span></span>
+                  <span class="who">Transfer received<small>Yesterday, 11:30</small></span>
+                  <span class="badge badge-approved"><span data-icon="check"></span> Completed</span>
+                  <strong class="num notranslate amount-in">+$250.00</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ul class="online-points" data-reveal>
+            <li><span data-icon="phone"></span> Works on any phone, tablet or computer</li>
+            <li><span data-icon="globe"></span> Available in 133 languages</li>
+            <li><span data-icon="list"></span> Searchable statement with receipts</li>
+            <li><span data-icon="users"></span> Saved recipients for faster transfers</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Security -->
+      <section class="section" id="security">
+        <div class="container split reverse">
+          <div class="split-media" data-reveal>
+            <img src="/img/security.jpg" alt="A specialist checking equipment in a data centre" width="1100" height="900" loading="lazy" />
+            <div class="split-badge" aria-hidden="true">
+              <span class="feature-icon"><span data-icon="shield"></span></span>
+              Checked by our team
+            </div>
+          </div>
+          <div data-reveal style="--delay: 120ms">
+            <span class="eyebrow">Security</span>
+            <h2>Your money is checked before it moves</h2>
+            <p class="lead">Every payment is reviewed by our team, and your sign-in details are protected.</p>
+            <ul class="checklist">
+              <li>
+                <span class="tick"><span data-icon="check"></span></span>
+                <div><strong>Reviewed payments</strong><span>Deposits, withdrawals and transfers are checked before your balance changes.</span></div>
+              </li>
+              <li>
+                <span class="tick"><span data-icon="check"></span></span>
+                <div><strong>Held, not spent</strong><span>Money for a payment in progress is set aside, so you can never overspend.</span></div>
+              </li>
+              <li>
+                <span class="tick"><span data-icon="check"></span></span>
+                <div><strong>Protected sign-in</strong><span>Passwords are stored hashed, and changing yours signs out every other device.</span></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Help -->
+      <section class="section section-tint" id="help">
+        <div class="container split">
+          <div data-reveal>
+            <span class="eyebrow">Help and support</span>
+            <h2>Real people, ready to help</h2>
+            <p class="lead">Chat with us from any page, before or after you open an account, to ask a question, order a card or talk about a loan.</p>
+            <div class="hero-cta" style="margin-bottom: 32px">
+              <button class="btn btn-primary btn-lg" type="button" data-open-support=""><span data-icon="chat"></span> Start a chat</button>
+              <a class="btn btn-secondary btn-lg" href="#faq">Read the FAQ</a>
+            </div>
+          </div>
+          <div class="split-media" data-reveal style="--delay: 120ms">
+            <img src="/img/support.jpg" alt="A member of staff helping a customer at a desk" width="1100" height="900" loading="lazy" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- Steps -->
+      <section class="section" id="how-it-works">
+        <div class="container">
+          <div class="section-head center" data-reveal>
+            <span class="eyebrow">Getting started</span>
+            <h2>Open your account in three steps</h2>
+          </div>
+          <div class="steps">
+            <article class="step" data-reveal>
+              <h3>Tell us about you</h3>
+              <p>Enter your name, contact details, date of birth and country of residence.</p>
+            </article>
+            <article class="step" data-reveal style="--delay: 100ms">
+              <h3>Choose your account</h3>
+              <p>Pick savings, current, business or joint, then set a password.</p>
+            </article>
+            <article class="step" data-reveal style="--delay: 200ms">
+              <h3>Start banking</h3>
+              <p>You get an account number straight away. Add money and make your first payment.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- FAQ -->
+      <section class="section section-tint" id="faq">
+        <div class="container">
+          <div class="section-head center" data-reveal>
+            <span class="eyebrow">FAQ</span>
+            <h2>Questions, answered</h2>
+          </div>
+          <div class="faq" data-reveal>
+            <details>
+              <summary>Is Capital Trust Bank a real bank?</summary>
+              <p>No. This is a demonstration site. Balances, cards and transactions are dummy data, and no real money is held or moved.</p>
+            </details>
+            <details>
+              <summary>Which accounts can I open?</summary>
+              <p>Savings, current, business and joint accounts. You choose the type during registration.</p>
+            </details>
+            <details>
+              <summary>How do I get a card?</summary>
+              <p>Open live support from your dashboard and tell us which card you would like. Our team issues it to your account and it appears on your Card page.</p>
+            </details>
+            <details>
+              <summary>How long does a payment take?</summary>
+              <p>A payment shows as processing until it has been checked, then changes to completed. Your dashboard updates on its own.</p>
+            </details>
+            <details>
+              <summary>Which languages are supported?</summary>
+              <p>You can switch the site to any of 133 languages using the selector at the top of every page. Translation needs an internet connection.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="cta-band" data-reveal>
+            <img src="/img/skyline.jpg" alt="" width="1600" height="800" loading="lazy" />
+            <h2>Ready to open your account?</h2>
+            <p>It takes about two minutes, and you get your account number straight away.</p>
+            <div class="hero-cta">
+              <a class="btn btn-lime btn-lg" href="/register">Open an account <span data-icon="arrow-right"></span></a>
+              <a class="btn btn-outline-light btn-lg" href="/login">Log in</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid footer-grid--wide">
+          <div>
+            <a class="brand notranslate" href="/" translate="no">
+              <img class="brand-mark" src="/img/logo-mark-clear.png" alt="" width="36" height="36" />
+              Capital Trust Bank
+            </a>
+            <p>Personal and business banking you can follow step by step.</p>
+          </div>
+          <div>
+            <h3>Personal</h3>
+            <ul>
+              <li><a href="#personal">Current account</a></li>
+              <li><a href="#personal">Savings account</a></li>
+              <li><a href="#personal">Joint account</a></li>
+              <li><a href="#cards">Cards</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Business</h3>
+            <ul>
+              <li><a href="#business">Business account</a></li>
+              <li><a href="#business">Payments</a></li>
+              <li><a href="#loans">Loans</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Help</h3>
+            <ul>
+              <li><a href="#help">Live support</a></li>
+              <li><a href="#faq">FAQ</a></li>
+              <li><a href="#security">Security</a></li>
+              <li><a href="#how-it-works">Getting started</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Online banking</h3>
+            <ul>
+              <li><a href="/login">Log in</a></li>
+              <li><a href="/register">Open an account</a></li>
+              <li><a href="#online">Take a tour</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-base">
+          <span>&copy; <span class="notranslate">2026 Capital Trust Bank</span></span>
+          <span>Demonstration site. No real money is held or moved.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/home.js"></script>
+    <script src="/js/support.js" data-mode="visitor"></script>
+  </body>
+</html>
