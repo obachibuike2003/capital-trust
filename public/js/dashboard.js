@@ -33,7 +33,7 @@
     profile: ['Profile', 'Your details and security.'],
   };
 
-  const SUBMIT_LABELS = { deposit: 'Add money', transfer: 'Send money', withdrawal: 'Withdraw' };
+  const SUBMIT_LABELS = { deposit: 'Add money', withdrawal: 'Withdraw' };
 
   // Customers see a plain processing state; the review itself happens behind the scenes.
   const STATUS = {
@@ -42,15 +42,17 @@
     rejected: { label: 'Declined', icon: 'x', badge: 'rejected' },
   };
 
-  const TYPE_ICON = { deposit: 'arrow-down', withdrawal: 'arrow-up', transfer: 'send', fee: 'card' };
+  const TYPE_ICON = { deposit: 'arrow-down', withdrawal: 'send', fee: 'card' };
 
   // ------------------------------------------------------------ helpers
 
   function title(tx) {
     if (tx.type === 'deposit') return 'Money added';
-    if (tx.type === 'withdrawal') return 'Withdrawal';
     if (tx.type === 'fee') return 'Card fee';
-    return tx.direction === 'in' ? 'Transfer received' : `Transfer to ${tx.recipientName}`;
+    // A withdrawal sends money to an account: the sender sees it going out,
+    // the recipient (another Capital Trust customer) sees it coming in.
+    if (tx.direction === 'in') return 'Money received';
+    return `Withdrawal to ${tx.recipientName}`;
   }
 
   function signed(tx) {
@@ -323,12 +325,12 @@
                   <strong>${esc(person.name)}</strong>
                   <small class="num">${esc(account(person.accountNumber))}</small>
                 </span>
-                <button class="btn btn-secondary btn-sm" type="button" data-pay="${person.id}">Send</button>
+                <button class="btn btn-secondary btn-sm" type="button" data-pay="${person.id}">Withdraw</button>
                 <button class="btn btn-ghost btn-sm" type="button" data-remove="${person.id}" aria-label="Remove ${esc(person.name)}">${icon('trash')}</button>
               </div>`
           )
           .join('')}</div>`
-      : empty('No saved recipients', 'Tick "Save this recipient" when you send money and they will appear here.', 'users');
+      : empty('No saved recipients', 'Tick "Save this recipient" when you withdraw and they will appear here.', 'users');
 
     const select = document.getElementById('saved');
     savedField.hidden = !beneficiaries.length;
@@ -355,7 +357,7 @@
       ['Reference', tx.reference, true],
       ['Date', date(tx.createdAt)],
     ];
-    if (tx.type === 'transfer' && tx.direction === 'out') {
+    if (tx.type === 'withdrawal' && tx.direction === 'out') {
       lines.push(['Recipient', tx.recipientName, true], ['Recipient account', tx.recipientAccount, true]);
     }
     if (tx.description) lines.push(['Your reference', tx.description, true]);
@@ -383,7 +385,11 @@
 
   function setType(type) {
     txForm.elements.type.value = type;
-    transferFields.hidden = type !== 'transfer';
+    // Withdrawing sends money to an account, so it shows the recipient fields.
+    const isWithdrawal = type === 'withdrawal';
+    transferFields.hidden = !isWithdrawal;
+    // A card is required to withdraw; without one we point the customer to the Card page.
+    document.getElementById('withdraw-no-card').hidden = !(isWithdrawal && !card);
     txSubmit.textContent = SUBMIT_LABELS[type];
   }
 
@@ -418,6 +424,8 @@
         for (const el of document.querySelectorAll('[data-bind="available"]')) CTB.countUp(el, user.availableCents, money);
       }
       renderCard();
+      // Refresh the "need a card" note now that we know whether a card exists.
+      setType(txForm.elements.type.value);
       renderMonth();
       renderChart();
       renderRecent();
@@ -470,15 +478,18 @@
     if (!Number.isFinite(amount) || amount <= 0) {
       return CTB.showError(txForm, 'Enter an amount greater than zero, for example 250.00.', 'amount');
     }
-    if (values.type !== 'deposit' && user && Math.round(amount * 100) > user.availableCents) {
-      return CTB.showError(txForm, `You have ${money(user.availableCents)} available. Enter a smaller amount.`, 'amount');
-    }
-    if (values.type === 'transfer') {
+    if (values.type === 'withdrawal') {
+      if (!card) {
+        return CTB.showError(txForm, 'You need a card to withdraw. Order one from the Card page first.');
+      }
+      if (user && Math.round(amount * 100) > user.availableCents) {
+        return CTB.showError(txForm, `You have ${money(user.availableCents)} available. Enter a smaller amount.`, 'amount');
+      }
       if (!/^[A-Za-z0-9\s]{6,40}$/.test(values.recipientAccount.trim())) {
-        return CTB.showError(txForm, 'Enter the recipient account number.', 'recipientAccount');
+        return CTB.showError(txForm, 'Enter the account number to send to.', 'recipientAccount');
       }
       if (values.recipientName.trim().length < 2) {
-        return CTB.showError(txForm, 'Enter the recipient name.', 'recipientName');
+        return CTB.showError(txForm, 'Enter the name on the account.', 'recipientName');
       }
     }
 
@@ -504,7 +515,7 @@
   document.getElementById('beneficiaries').addEventListener('click', async (event) => {
     const pay = event.target.closest('[data-pay]');
     if (pay) {
-      setType('transfer');
+      setType('withdrawal');
       useBeneficiary(pay.dataset.pay);
       txForm.elements.amount.focus();
       return;

@@ -155,7 +155,7 @@ const CTB = (() => {
                      <span class="atm-sign-strip notranslate">${esc(holder)}</span>
                      <span class="atm-cvv num notranslate">${masked || locked ? '\u2022\u2022\u2022' : esc(cvv)}</span>
                    </div>
-                   <p class="atm-small">This card is issued by Capital Trust Bank for demonstration only. It cannot be used for purchases or cash withdrawals.</p>
+                   <p class="atm-small">This card remains the property of Capital Trust Bank. Use is subject to the cardholder agreement. Keep your card number and security code private.</p>
                    <div class="atm-row atm-row--end">
                      <span class="atm-bank notranslate"><img class="atm-logo" src="/img/${tier === 'gold' ? 'logo-mark' : 'logo-mark-clear'}.png" alt="" /> Capital Trust</span>
                      <div class="atm-network" aria-hidden="true"><i></i><b>Debit</b></div>

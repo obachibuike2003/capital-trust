@@ -41,8 +41,9 @@
   // ------------------------------------------------------------ transactions
 
   function details(tx) {
-    const lines = [esc(TYPE_LABELS[tx.type])];
-    if (tx.type === 'transfer') {
+    const lines = [esc(TYPE_LABELS[tx.type] || tx.type)];
+    // Withdrawals (and any older transfers) send money to a recipient account.
+    if (tx.recipientName) {
       lines.push(`<span class="sub">To ${esc(tx.recipientName)} &middot; <span class="notranslate">${esc(tx.recipientAccount)}</span></span>`);
     }
     if (tx.description) lines.push(`<span class="sub">${esc(tx.description)}</span>`);

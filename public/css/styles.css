@@ -525,6 +525,10 @@ iframe.skiptranslate,
   border-radius: var(--radius-sm);
 }
 
+.segmented--two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .segmented input {
   position: absolute;
   width: 1px;

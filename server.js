@@ -423,7 +423,7 @@ function rateLimit(req, limit = 30, windowMs = 10 * 60 * 1000) {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^\+?[0-9][0-9\s()-]{6,19}$/;
-const TX_TYPES = new Set(['deposit', 'withdrawal', 'transfer']);
+const TX_TYPES = new Set(['deposit', 'withdrawal']);
 const ACCOUNT_TYPES = new Set(['savings', 'current', 'business', 'joint']);
 
 function validName(value) {
@@ -581,19 +581,23 @@ const routes = {
       throw new HttpError(400, 'The maximum for a single transaction is $1,000,000.', 'amount');
     }
 
+    // Withdrawing means sending money to an account, so it needs a card and recipient details.
     let recipientAccount = null;
     let recipientName = null;
     let recipientUserId = null;
-    if (type === 'transfer') {
+    if (type === 'withdrawal') {
+      if (!db.prepare('SELECT 1 FROM cards WHERE user_id = ?').get(user.id)) {
+        throw new HttpError(403, 'You need a card to withdraw. Order one from the Card page first.');
+      }
       recipientAccount = text(body.recipientAccount, 34).replace(/\s+/g, '');
       recipientName = text(body.recipientName, 80);
       if (!/^[A-Za-z0-9]{6,34}$/.test(recipientAccount)) {
-        throw new HttpError(400, 'Enter the recipient account number (6 to 34 letters or digits).', 'recipientAccount');
+        throw new HttpError(400, 'Enter the account number to send to (6 to 34 letters or digits).', 'recipientAccount');
       }
       if (recipientAccount === user.account_number) {
-        throw new HttpError(400, 'You cannot transfer to your own account.', 'recipientAccount');
+        throw new HttpError(400, 'You cannot withdraw to your own account.', 'recipientAccount');
       }
-      if (recipientName.length < 2) throw new HttpError(400, 'Enter the recipient name.', 'recipientName');
+      if (recipientName.length < 2) throw new HttpError(400, 'Enter the name on the account.', 'recipientName');
       const recipient = db.prepare('SELECT id FROM users WHERE account_number = ?').get(recipientAccount);
       if (recipient) recipientUserId = recipient.id;
     }
@@ -623,7 +627,7 @@ const routes = {
         text(body.description, 140) || null,
         new Date().toISOString()
       );
-    if (type === 'transfer' && body.saveRecipient) {
+    if (type === 'withdrawal' && body.saveRecipient) {
       db.prepare(
         'INSERT OR IGNORE INTO beneficiaries (user_id, name, account_number, created_at) VALUES (?, ?, ?, ?)'
       ).run(user.id, recipientName, recipientAccount, new Date().toISOString());
@@ -813,7 +817,8 @@ async function reviewTransaction(req, res, id, action) {
           throw new HttpError(409, 'The customer does not have enough funds. Reject this request instead.');
         }
         adjust.run(-tx.amount_cents, owner.id);
-        if (tx.type === 'transfer' && tx.recipient_user_id) adjust.run(tx.amount_cents, tx.recipient_user_id);
+        // A withdrawal sent to another Capital Trust account credits that account.
+        if (tx.recipient_user_id) adjust.run(tx.amount_cents, tx.recipient_user_id);
       }
     }
 

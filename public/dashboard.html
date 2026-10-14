@@ -84,14 +84,13 @@
               <span class="stat-icon is-amber"><span data-icon="arrow-up"></span></span>
               <p class="label">Money out this month</p>
               <p class="value num notranslate" id="month-out">&mdash;</p>
-              <p class="muted">Withdrawals and transfers</p>
+              <p class="muted">Money withdrawn</p>
             </div>
           </div>
 
           <div class="quick-actions" aria-label="Quick actions">
             <a class="quick" href="#payments" data-quick="deposit"><span class="quick-icon"><span data-icon="arrow-down"></span></span> Add money</a>
-            <a class="quick" href="#payments" data-quick="transfer"><span class="quick-icon"><span data-icon="send"></span></span> Send money</a>
-            <a class="quick" href="#payments" data-quick="withdrawal"><span class="quick-icon"><span data-icon="arrow-up"></span></span> Withdraw</a>
+            <a class="quick" href="#payments" data-quick="withdrawal"><span class="quick-icon"><span data-icon="send"></span></span> Withdraw</a>
             <a class="quick" href="#history"><span class="quick-icon"><span data-icon="list"></span></span> Statement</a>
           </div>
 
@@ -156,13 +155,11 @@
 
                 <fieldset class="field choice-group">
                   <legend class="field-label">What would you like to do?</legend>
-                  <div class="segmented">
+                  <div class="segmented segmented--two">
                     <input type="radio" name="type" id="type-deposit" value="deposit" checked />
-                    <label for="type-deposit"><span data-icon="arrow-down"></span> Deposit</label>
-                    <input type="radio" name="type" id="type-transfer" value="transfer" />
-                    <label for="type-transfer"><span data-icon="send"></span> Send</label>
+                    <label for="type-deposit"><span data-icon="arrow-down"></span> Add money</label>
                     <input type="radio" name="type" id="type-withdrawal" value="withdrawal" />
-                    <label for="type-withdrawal"><span data-icon="arrow-up"></span> Withdraw</label>
+                    <label for="type-withdrawal"><span data-icon="send"></span> Withdraw</label>
                   </div>
                 </fieldset>
 
@@ -172,6 +169,10 @@
                 </div>
 
                 <div id="transfer-fields" hidden>
+                  <p class="no-card-note" id="withdraw-no-card" role="alert" hidden>
+                    <span data-icon="lock"></span>
+                    <span>You need a card to withdraw. <a href="#card">Order a card</a> from our support team first.</span>
+                  </p>
                   <div class="field" id="saved-field" hidden>
                     <label for="saved">Saved recipient</label>
                     <select id="saved" name="saved"></select>
@@ -199,11 +200,6 @@
 
                 <button class="btn btn-primary btn-lg btn-block" type="submit" id="tx-submit">Add money</button>
               </form>
-
-              <p class="demo-note">
-                <span data-icon="info"></span>
-                <span>Demonstration account. No real money moves.</span>
-              </p>
             </section>
 
             <section class="panel" aria-labelledby="saved-title">
@@ -255,7 +251,7 @@
               </button>
               <p class="demo-note">
                 <span data-icon="info"></span>
-                <span>The card fee is taken from your demonstration balance. No real payment is involved.</span>
+                <span>The card fee is taken from your account balance once the card is issued.</span>
               </p>
             </section>
           </div>
@@ -286,7 +282,7 @@
               </dl>
               <p class="demo-note">
                 <span data-icon="info"></span>
-                <span>This card is part of the demonstration and cannot be used for real purchases.</span>
+                <span>Keep your card number and security code private. Never share them with anyone.</span>
               </p>
             </section>
           </div>
