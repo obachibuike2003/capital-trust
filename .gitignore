@@ -1,6 +1,2 @@
 node_modules/
 data/
-.venv/
-__pycache__/
-app.py
-requirements.txt
