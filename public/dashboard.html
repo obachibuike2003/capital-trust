@@ -368,16 +368,23 @@
     </section>
 
     <dialog id="receipt" aria-labelledby="receipt-title">
-      <div class="receipt-head">
-        <span class="feature-icon" id="receipt-icon"></span>
-        <p class="muted" id="receipt-title">Transaction</p>
-        <p class="receipt-amount num notranslate" id="receipt-amount"></p>
-        <span id="receipt-status"></span>
-      </div>
-      <dl class="details" id="receipt-details"></dl>
-      <div class="dialog-actions">
-        <button class="btn btn-ghost" type="button" id="receipt-copy"><span data-icon="copy"></span> Copy reference</button>
-        <button class="btn btn-primary" type="button" id="receipt-close">Done</button>
+      <div class="receipt">
+        <span class="receipt-badge" id="receipt-badge" aria-hidden="true"></span>
+        <h2 id="receipt-title">Payment in progress</h2>
+        <p class="receipt-sub" id="receipt-sub"></p>
+
+        <div class="receipt-card">
+          <p class="receipt-amount num notranslate" id="receipt-amount"></p>
+          <p class="receipt-to notranslate" id="receipt-to"></p>
+          <ol class="tracker" id="receipt-tracker"></ol>
+        </div>
+
+        <dl class="details" id="receipt-details"></dl>
+
+        <div class="dialog-actions">
+          <button class="btn btn-ghost" type="button" id="receipt-copy"><span data-icon="copy"></span> Copy reference</button>
+          <button class="btn btn-primary" type="button" id="receipt-close">Done</button>
+        </div>
       </div>
     </dialog>
 

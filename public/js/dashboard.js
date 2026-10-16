@@ -24,6 +24,7 @@
   let flipped = false;
   let chartDrawn = false;
   let openReference = '';
+  let receiptTx = null;
 
   const VIEWS = {
     overview: ['Overview', ''],
@@ -346,26 +347,108 @@
     profileForm.elements.country.innerHTML = CTB.countryOptions(user.country || '');
   }
 
-  function openReceipt(tx) {
-    openReference = tx.reference;
-    document.getElementById('receipt-icon').innerHTML = icon(tx.direction === 'in' ? 'arrow-down' : TYPE_ICON[tx.type]);
-    document.getElementById('receipt-title').textContent = title(tx);
-    document.getElementById('receipt-amount').textContent = signed(tx);
-    document.getElementById('receipt-status').innerHTML = badge(tx);
+  // Headline, subtitle and badge icon for each stage of a transaction's life.
+  function receiptHead(tx) {
+    const to = tx.recipientName || 'the recipient';
+    if (tx.status === 'pending') {
+      const sub =
+        tx.type === 'deposit'
+          ? "Your deposit has been submitted for review. We'll add it to your balance as soon as it's approved."
+          : `This payment to ${to} has been submitted for review. To avoid a duplicate, check your history before retrying.`;
+      const title = tx.type === 'deposit' ? 'Deposit in progress' : 'Withdrawal in progress';
+      return { state: 'pending', badge: 'hourglass', title, sub };
+    }
+    if (tx.status === 'approved') {
+      if (tx.type === 'deposit') return { state: 'done', badge: 'check', title: 'Money added', sub: 'Your deposit is complete and your balance has been updated.' };
+      if (tx.direction === 'in') return { state: 'done', badge: 'check', title: 'Money received', sub: 'This payment has arrived in your account.' };
+      return { state: 'done', badge: 'check', title: 'Withdrawal complete', sub: `Your money has been sent to ${to}.` };
+    }
+    return {
+      state: 'failed',
+      badge: 'x',
+      title: tx.type === 'deposit' ? 'Deposit declined' : 'Withdrawal declined',
+      sub: tx.adminNote || 'This request was not approved. No money has left your account.',
+    };
+  }
 
-    const lines = [
-      ['Reference', tx.reference, true],
-      ['Date', date(tx.createdAt)],
+  // The three-stage progress tracker (submitted -> under review -> completed).
+  function trackerSteps(tx) {
+    const approved = tx.status === 'approved';
+    const rejected = tx.status === 'rejected';
+    let last;
+    if (tx.type === 'deposit') last = 'Added to your balance';
+    else if (tx.direction === 'in') last = 'Received';
+    else last = `Sent to ${tx.recipientName || 'recipient'}`;
+    return [
+      { label: 'Request submitted', state: 'done' },
+      { label: rejected ? 'Declined by bank' : 'Under review', state: rejected ? 'failed' : approved ? 'done' : 'active' },
+      { label: last, state: approved ? 'done' : rejected ? 'cancelled' : 'pending' },
     ];
+  }
+
+  function renderReceipt(tx) {
+    const head = receiptHead(tx);
+    const badgeEl = document.getElementById('receipt-badge');
+    badgeEl.className = `receipt-badge is-${head.state}`;
+    badgeEl.innerHTML = icon(head.badge);
+    document.getElementById('receipt-title').textContent = head.title;
+    document.getElementById('receipt-sub').textContent = head.sub;
+    document.getElementById('receipt-amount').textContent = signed(tx);
+
+    const to = document.getElementById('receipt-to');
+    to.textContent = tx.type === 'withdrawal' && tx.direction === 'out' ? tx.recipientName : '';
+    to.hidden = !to.textContent;
+
+    document.getElementById('receipt-tracker').innerHTML = trackerSteps(tx)
+      .map(
+        (step) => `
+          <li class="is-${step.state}">
+            <span class="dot">${step.state === 'done' ? icon('check') : step.state === 'failed' ? icon('x') : ''}</span>
+            <span class="lbl">${esc(step.label)}</span>
+          </li>`
+      )
+      .join('');
+
+    const lines = [['Reference', tx.reference, true], ['Date', date(tx.createdAt)]];
     if (tx.type === 'withdrawal' && tx.direction === 'out') {
-      lines.push(['Recipient', tx.recipientName, true], ['Recipient account', tx.recipientAccount, true]);
+      lines.push(['To account', tx.recipientAccount, true]);
     }
     if (tx.description) lines.push(['Your reference', tx.description, true]);
-    if (tx.status === 'rejected' && tx.adminNote) lines.push(['Reason', tx.adminNote]);
     document.getElementById('receipt-details').innerHTML = lines
       .map(([label, value, literal]) => `<div><dt>${label}</dt><dd${literal ? ' class="notranslate"' : ''}>${esc(value)}</dd></div>`)
       .join('');
+  }
+
+  function openReceipt(tx) {
+    openReference = tx.reference;
+    receiptTx = tx;
+    renderReceipt(tx);
     receipt.showModal();
+  }
+
+  // While a receipt is open and still processing, poll so it flips to
+  // complete (or declined) the moment the admin reviews it.
+  async function pollReceipt() {
+    if (!receipt.open || !receiptTx || receiptTx.status !== 'pending') return;
+    try {
+      const { transactions: list } = await api('/api/transactions');
+      const fresh = list.find((item) => item.id === receiptTx.id);
+      if (fresh && fresh.status !== 'pending') {
+        receiptTx = fresh;
+        renderReceipt(fresh);
+        // Balances and history changed too; refresh them in the background.
+        transactions = list;
+        const me = await api('/api/me');
+        user = me.user;
+        renderUser();
+        renderMonth();
+        renderChart();
+        renderRecent();
+        renderHistory();
+      }
+    } catch {
+      /* try again on the next tick */
+    }
   }
 
   // ------------------------------------------------------------ navigation
@@ -645,6 +728,11 @@
   setInterval(() => {
     if (!document.hidden && !receipt.open) load();
   }, 20000);
+
+  // A faster poll just for an open, still-processing receipt.
+  setInterval(() => {
+    if (!document.hidden) pollReceipt();
+  }, 4000);
 
   showView(false);
   load();

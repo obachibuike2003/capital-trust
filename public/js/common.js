@@ -81,6 +81,7 @@ const CTB = (() => {
     briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
     chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+    hourglass: '<path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2z"/>',
     'chevron-left': '<path d="m15 18-6-6 6-6"/>',
     pause: '<path d="M8 5v14M16 5v14"/>',
     play: '<path d="m7 4 13 8-13 8z"/>',
