@@ -10,6 +10,9 @@
   const cardDialog = document.getElementById('card-dialog');
   const cardForm = document.getElementById('card-form');
   const cardConfirm = document.getElementById('card-confirm');
+  const fundDialog = document.getElementById('fund-dialog');
+  const fundForm = document.getElementById('fund-form');
+  const fundConfirm = document.getElementById('fund-confirm');
 
   let current = 'pending';
   let transactions = [];
@@ -19,6 +22,7 @@
   let thread = null; // open conversation: { kind, id, customer | visitor, messages }
   let reviewing = null; // { tx, action }
   let issuingTo = null; // customer receiving a card
+  let funding = null; // customer being funded
 
   const TYPE_LABELS = { deposit: 'Deposit', withdrawal: 'Withdrawal', transfer: 'Transfer', fee: 'Card fee' };
   const STATUS = {
@@ -126,7 +130,7 @@
     view.innerHTML = `
       <table class="table">
         <thead>
-          <tr><th>Customer</th><th>Account</th><th>Contact</th><th class="col-end">Balance</th><th>Card</th><th><span class="sr-only">Chat</span></th></tr>
+          <tr><th>Customer</th><th>Account</th><th>Contact</th><th class="col-end">Balance</th><th>Card</th><th><span class="sr-only">Actions</span></th></tr>
         </thead>
         <tbody>
           ${customers
@@ -152,8 +156,11 @@
                     <span class="num notranslate amount-out">${esc(money(customer.balanceCents))}</span>
                   </td>
                   <td data-label="Card">${cardCell(customer)}</td>
-                  <td data-label="Chat">
-                    <button class="btn btn-secondary btn-sm" type="button" data-chat="customer:${customer.id}">${icon('chat')} Message</button>
+                  <td data-label="Actions">
+                    <span class="actions">
+                      <button class="btn btn-primary btn-sm" type="button" data-fund="${customer.id}">${icon('arrow-down')} Fund</button>
+                      <button class="btn btn-secondary btn-sm" type="button" data-chat="customer:${customer.id}">${icon('chat')} Message</button>
+                    </span>
                   </td>
                 </tr>`
             )
@@ -195,11 +202,14 @@
                    <strong>${esc(thread.customer.fullName)}</strong>
                    <small>${esc(account(thread.customer.accountNumber))} &middot; Available ${esc(money(thread.customer.availableCents))}</small>
                  </div>
-                 ${
-                   thread.customer.card
-                     ? `<span class="badge badge-approved">${icon('card')} ${tierName(thread.customer.card.tier)} card</span>`
-                     : `<button class="btn btn-primary btn-sm" type="button" data-issue="${thread.customer.id}">${icon('card')} Issue card</button>`
-                 }`
+                 <span class="actions">
+                   <button class="btn btn-secondary btn-sm" type="button" data-fund="${thread.customer.id}">${icon('arrow-down')} Fund</button>
+                   ${
+                     thread.customer.card
+                       ? `<span class="badge badge-approved">${icon('card')} ${tierName(thread.customer.card.tier)} card</span>`
+                       : `<button class="btn btn-primary btn-sm" type="button" data-issue="${thread.customer.id}">${icon('card')} Issue card</button>`
+                   }
+                 </span>`
           }
         </header>
         <div class="chat-log" id="convo-log">
@@ -340,6 +350,40 @@
     cardDialog.showModal();
   }
 
+  function openFund(userId) {
+    funding =
+      customers.find((customer) => customer.id === userId) ||
+      (thread && thread.customer && thread.customer.id === userId ? thread.customer : null);
+    if (!funding) return;
+    CTB.clearErrors(fundForm);
+    fundForm.reset();
+    document.getElementById('fund-summary').innerHTML = `
+      <strong class="notranslate">${esc(funding.fullName)}</strong><br />
+      <span class="notranslate">${esc(account(funding.accountNumber))} &middot; Balance ${esc(money(funding.balanceCents))}</span>`;
+    fundDialog.showModal();
+  }
+
+  fundForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!funding) return;
+    CTB.clearErrors(fundForm);
+    const amount = Number(String(fundForm.elements.amount.value).replace(/[,\s$]/g, ''));
+    if (!Number.isFinite(amount) || amount <= 0) return CTB.showError(fundForm, 'Enter an amount greater than zero.', 'amount');
+    CTB.setLoading(fundConfirm, true);
+    try {
+      await api(`/api/admin/users/${funding.id}/fund`, { method: 'POST', body: { amount, note: fundForm.elements.note.value } });
+      fundDialog.close();
+      toast(`Added ${money(Math.round(amount * 100))} to ${funding.fullName}.`);
+      await load();
+    } catch (error) {
+      CTB.showError(fundForm, error.message, error.field);
+    } finally {
+      CTB.setLoading(fundConfirm, false);
+    }
+  });
+
+  document.getElementById('fund-cancel').addEventListener('click', () => fundDialog.close());
+
   cardForm.elements.tier.addEventListener('change', (event) => {
     cardForm.elements.fee.value = (tiers[event.target.value] / 100).toFixed(2);
   });
@@ -390,12 +434,14 @@
   // ------------------------------------------------------------ events
 
   view.addEventListener('click', async (event) => {
-    const target = event.target.closest('[data-action], [data-issue], [data-revoke], [data-chat]');
+    const target = event.target.closest('[data-action], [data-issue], [data-fund], [data-revoke], [data-chat]');
     if (!target) return;
     try {
       if (target.dataset.action) {
         const tx = transactions.find((item) => item.id === Number(target.dataset.id));
         if (tx) openReview(tx, target.dataset.action);
+      } else if (target.dataset.fund) {
+        openFund(Number(target.dataset.fund));
       } else if (target.dataset.issue) {
         await openIssue(Number(target.dataset.issue));
       } else if (target.dataset.revoke) {
@@ -452,11 +498,11 @@
 
   // Keep queues fresh; the support view refreshes faster so replies feel live.
   setInterval(() => {
-    if (document.hidden || reviewDialog.open || cardDialog.open) return;
+    if (document.hidden || reviewDialog.open || cardDialog.open || fundDialog.open) return;
     if (current === 'support') load();
   }, 5000);
   setInterval(() => {
-    if (document.hidden || reviewDialog.open || cardDialog.open) return;
+    if (document.hidden || reviewDialog.open || cardDialog.open || fundDialog.open) return;
     if (current !== 'support') load();
   }, 20000);
 

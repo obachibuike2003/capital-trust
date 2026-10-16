@@ -925,6 +925,39 @@ async function adminCard(req, res, userId) {
   sendJson(res, 201, { card: cardFor(customer.id) });
 }
 
+// POST /api/admin/users/:id/fund - the admin adds money to a customer's balance.
+async function fundAccount(req, res, userId) {
+  const admin = requireAdmin(req);
+  const customer = customerById(userId);
+  const body = await readJson(req);
+
+  const amountCents = Math.round(Number(body.amount) * 100);
+  if (!Number.isFinite(amountCents) || amountCents <= 0) {
+    throw new HttpError(400, 'Enter an amount greater than zero.', 'amount');
+  }
+  if (amountCents > MAX_AMOUNT_CENTS) {
+    throw new HttpError(400, 'The maximum for a single credit is $1,000,000.', 'amount');
+  }
+  const note = text(body.note, 140) || 'Account credit from Capital Trust Bank';
+  const now = new Date().toISOString();
+  const reference = 'CTB' + crypto.randomBytes(5).toString('hex').toUpperCase();
+
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    db.prepare('UPDATE users SET balance_cents = balance_cents + ? WHERE id = ?').run(amountCents, customer.id);
+    // Recorded as an already-approved deposit, so it shows as "Money added" for the customer.
+    db.prepare(
+      `INSERT INTO transactions (reference, user_id, type, amount_cents, description, status, created_at, reviewed_at, reviewed_by)
+       VALUES (?, ?, 'deposit', ?, ?, 'approved', ?, ?, ?)`
+    ).run(reference, customer.id, amountCents, note, now, now, admin.id);
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+  sendJson(res, 201, { ok: true, user: publicUser(db.prepare('SELECT * FROM users WHERE id = ?').get(customer.id)) });
+}
+
 // ---------------------------------------------------------------- static files
 
 const MIME = {
@@ -1000,6 +1033,9 @@ const server = http.createServer(async (req, res) => {
 
       const card = pathname.match(/^\/api\/admin\/users\/(\d+)\/card$/);
       if (card && (req.method === 'POST' || req.method === 'DELETE')) return await adminCard(req, res, Number(card[1]));
+
+      const fund = pathname.match(/^\/api\/admin\/users\/(\d+)\/fund$/);
+      if (fund && req.method === 'POST') return await fundAccount(req, res, Number(fund[1]));
 
       const saved = pathname.match(/^\/api\/beneficiaries\/(\d+)$/);
       if (saved && req.method === 'DELETE') {
