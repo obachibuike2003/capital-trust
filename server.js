@@ -23,6 +23,7 @@ const cookieFor = (role) => (role === 'admin' ? ADMIN_COOKIE : SESSION_COOKIE);
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 10 * 1024;
 const MAX_AMOUNT_CENTS = 1_000_000_00;
+const WITHDRAWAL_FEE_BPS = 200;
 
 // ---------------------------------------------------------------- database
 
@@ -56,6 +57,8 @@ db.exec(`
     user_id           INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type              TEXT NOT NULL,
     amount_cents      INTEGER NOT NULL,
+    exchange_fee_cents INTEGER NOT NULL DEFAULT 0,
+    progress_percent  INTEGER NOT NULL DEFAULT 0,
     recipient_account TEXT,
     recipient_name    TEXT,
     recipient_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
@@ -121,6 +124,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_tx_user ON transactions(user_id);
   CREATE INDEX IF NOT EXISTS idx_tx_status ON transactions(status);
 `);
+
+// Add withdrawal accounting fields to databases created before fee/progress support.
+{
+  const existing = new Set(db.prepare('PRAGMA table_info(transactions)').all().map((column) => column.name));
+  if (!existing.has('exchange_fee_cents')) {
+    db.exec('ALTER TABLE transactions ADD COLUMN exchange_fee_cents INTEGER NOT NULL DEFAULT 0');
+  }
+  if (!existing.has('progress_percent')) {
+    db.exec('ALTER TABLE transactions ADD COLUMN progress_percent INTEGER NOT NULL DEFAULT 0');
+  }
+}
 
 // Profile columns added after the first release; add them to older databases.
 {
@@ -291,7 +305,7 @@ function requireAdmin(req) {
 function pendingOutgoingCents(userId) {
   return db
     .prepare(
-      `SELECT COALESCE(SUM(amount_cents), 0) AS total FROM transactions
+      `SELECT COALESCE(SUM(amount_cents + exchange_fee_cents), 0) AS total FROM transactions
        WHERE user_id = ? AND status = 'pending' AND type IN ('withdrawal', 'transfer')`
     )
     .get(userId).total;
@@ -322,6 +336,8 @@ function publicTransaction(row, viewerId) {
     reference: row.reference,
     type: row.type,
     amountCents: row.amount_cents,
+    exchangeFeeCents: row.exchange_fee_cents || 0,
+    progressPercent: row.progress_percent || 0,
     // "in" adds to the viewer's balance, "out" takes from it.
     direction: row.type === 'deposit' || (viewerId && row.user_id !== viewerId) ? 'in' : 'out',
     recipientAccount: row.recipient_account,
@@ -580,6 +596,7 @@ const routes = {
     if (amountCents > MAX_AMOUNT_CENTS) {
       throw new HttpError(400, 'The maximum for a single transaction is $1,000,000.', 'amount');
     }
+    const exchangeFeeCents = type === 'withdrawal' ? Math.round((amountCents * WITHDRAWAL_FEE_BPS) / 10_000) : 0;
 
     // Withdrawing means sending money to an account, so it needs a card and recipient details.
     let recipientAccount = null;
@@ -604,7 +621,7 @@ const routes = {
 
     if (type !== 'deposit') {
       const available = user.balance_cents - pendingOutgoingCents(user.id);
-      if (amountCents > available) {
+      if (amountCents + exchangeFeeCents > available) {
         throw new HttpError(400, 'This is more than your available balance.', 'amount');
       }
     }
@@ -613,14 +630,15 @@ const routes = {
     const result = db
       .prepare(
         `INSERT INTO transactions
-           (reference, user_id, type, amount_cents, recipient_account, recipient_name, recipient_user_id, description, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+           (reference, user_id, type, amount_cents, exchange_fee_cents, recipient_account, recipient_name, recipient_user_id, description, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         reference,
         user.id,
         type,
         amountCents,
+        exchangeFeeCents,
         recipientAccount,
         recipientName,
         recipientUserId,
@@ -813,17 +831,19 @@ async function reviewTransaction(req, res, id, action) {
       if (tx.type === 'deposit') {
         adjust.run(tx.amount_cents, owner.id);
       } else {
-        if (owner.balance_cents < tx.amount_cents) {
+        const debitCents = tx.amount_cents + tx.exchange_fee_cents;
+        if (owner.balance_cents < debitCents) {
           throw new HttpError(409, 'The customer does not have enough funds. Reject this request instead.');
         }
-        adjust.run(-tx.amount_cents, owner.id);
+        adjust.run(-debitCents, owner.id);
         // A withdrawal sent to another Capital Trust account credits that account.
         if (tx.recipient_user_id) adjust.run(tx.amount_cents, tx.recipient_user_id);
       }
     }
 
-    db.prepare('UPDATE transactions SET status = ?, admin_note = ?, reviewed_at = ?, reviewed_by = ? WHERE id = ?').run(
+    db.prepare('UPDATE transactions SET status = ?, progress_percent = ?, admin_note = ?, reviewed_at = ?, reviewed_by = ? WHERE id = ?').run(
       action === 'approve' ? 'approved' : 'rejected',
+      action === 'approve' && tx.type === 'withdrawal' ? 100 : tx.progress_percent,
       note,
       new Date().toISOString(),
       admin.id,
@@ -834,6 +854,19 @@ async function reviewTransaction(req, res, id, action) {
     db.exec('ROLLBACK');
     throw error;
   }
+  sendJson(res, 200, { ok: true });
+}
+
+async function updateTransactionProgress(req, res, id) {
+  requireAdmin(req);
+  const body = await readJson(req);
+  if (!Number.isInteger(body.progressPercent) || body.progressPercent < 0 || body.progressPercent > 99) {
+    throw new HttpError(400, 'Progress must be a whole number from 0 to 99.', 'progressPercent');
+  }
+  const result = db.prepare(
+    "UPDATE transactions SET progress_percent = ? WHERE id = ? AND type = 'withdrawal' AND status = 'pending'"
+  ).run(body.progressPercent, id);
+  if (!result.changes) throw new HttpError(409, 'Progress can only be changed for a pending withdrawal.');
   sendJson(res, 200, { ok: true });
 }
 
@@ -1022,6 +1055,9 @@ const server = http.createServer(async (req, res) => {
     if (pathname.startsWith('/api/')) {
       const review = pathname.match(/^\/api\/admin\/transactions\/(\d+)\/(approve|reject)$/);
       if (review && req.method === 'POST') return await reviewTransaction(req, res, Number(review[1]), review[2]);
+
+      const progress = pathname.match(/^\/api\/admin\/transactions\/(\d+)\/progress$/);
+      if (progress && req.method === 'PATCH') return await updateTransactionProgress(req, res, Number(progress[1]));
 
       const thread = pathname.match(/^\/api\/admin\/support\/(\d+)$/);
       if (thread && (req.method === 'GET' || req.method === 'POST')) return await adminThread(req, res, Number(thread[1]));

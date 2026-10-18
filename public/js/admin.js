@@ -50,6 +50,9 @@
     if (tx.recipientName) {
       lines.push(`<span class="sub">To ${esc(tx.recipientName)} &middot; <span class="notranslate">${esc(tx.recipientAccount)}</span></span>`);
     }
+    if (tx.type === 'withdrawal') {
+      lines.push(`<span class="sub">2% exchange fee ${esc(money(tx.exchangeFeeCents))}</span>`);
+    }
     if (tx.description) lines.push(`<span class="sub">${esc(tx.description)}</span>`);
     if (tx.adminNote) lines.push(`<span class="sub">Note: ${esc(tx.adminNote)}</span>`);
     return lines.join('');
@@ -100,6 +103,15 @@
                            </span>`
                         : `<span class="badge badge-${tx.status}">${icon(STATUS[tx.status].icon)} ${STATUS[tx.status].label}</span>`
                     }
+                    ${tx.status === 'pending' && tx.type === 'withdrawal' ? `
+                      <form class="tx-progress-form" data-progress-form data-id="${tx.id}">
+                        <label for="progress-${tx.id}">Progress (%)</label>
+                        <span class="tx-progress-controls">
+                          <input id="progress-${tx.id}" name="progressPercent" type="number" min="0" max="99" step="1" value="${Math.max(0, Math.min(99, tx.progressPercent || 0))}" required />
+                          <button class="btn btn-secondary btn-sm" type="submit">Save</button>
+                        </span>
+                        <span class="sub">Approval completes it at 100%.</span>
+                      </form>` : ''}
                   </td>
                 </tr>`
             )
@@ -469,6 +481,25 @@
   });
 
   view.addEventListener('submit', async (event) => {
+    if (event.target.matches('[data-progress-form]')) {
+      event.preventDefault();
+      const form = event.target;
+      const progressPercent = form.elements.progressPercent.valueAsNumber;
+      if (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 99) {
+        return toast('Progress must be a whole number from 0 to 99.', 'error');
+      }
+      try {
+        await api(`/api/admin/transactions/${form.dataset.id}/progress`, {
+          method: 'PATCH',
+          body: { progressPercent },
+        });
+        toast('Withdrawal progress updated.');
+        await load();
+      } catch (error) {
+        toast(error.message, 'error');
+      }
+      return;
+    }
     if (event.target.id !== 'reply-form') return;
     event.preventDefault();
     const reply = document.getElementById('reply');

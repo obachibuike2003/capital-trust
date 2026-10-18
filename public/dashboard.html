@@ -52,11 +52,22 @@
         <!-- ---------------------------------------------------- Overview -->
         <section data-view="overview">
           <div class="overview-grid">
-            <div class="bank-card">
+            <div class="bank-card bank-card--account">
               <div class="card-top"><span class="notranslate">Capital Trust</span><span class="chip" aria-hidden="true"></span></div>
-              <div>
-                <p class="label">Total balance</p>
-                <p class="amount num notranslate" data-bind="balance">&mdash;</p>
+              <div class="card-balance-group">
+                <div class="card-balance-row">
+                  <div>
+                    <p class="label">Total balance</p>
+                    <p class="amount num notranslate balance-private" data-bind="balance">&mdash;</p>
+                  </div>
+                  <button class="balance-toggle" id="toggle-balances" type="button" aria-label="Hide balances" title="Hide balances" aria-pressed="false">
+                    <span data-icon="eye"></span>
+                  </button>
+                </div>
+                <div class="card-available">
+                  <span>Available balance</span>
+                  <strong class="num notranslate balance-private" data-bind="available">&mdash;</strong>
+                </div>
               </div>
               <div class="card-bottom">
                 <div>
@@ -66,13 +77,11 @@
                 </div>
                 <button class="copy-btn" type="button" data-copy-account><span data-icon="copy"></span> Copy</button>
               </div>
-            </div>
-
-            <div class="stat">
-              <span class="stat-icon"><span data-icon="wallet"></span></span>
-              <p class="label">Available balance</p>
-              <p class="value num notranslate" data-bind="available">&mdash;</p>
-              <p class="muted">Ready to use now</p>
+              <nav class="card-actions" aria-label="Account actions">
+                <a class="card-action" href="#payments" data-quick="deposit"><span data-icon="arrow-down"></span><span>Add money</span></a>
+                <a class="card-action" href="#payments" data-quick="withdrawal"><span data-icon="send"></span><span>Withdraw</span></a>
+                <a class="card-action" href="#history"><span data-icon="list"></span><span>Statement</span></a>
+              </nav>
             </div>
             <div class="stat">
               <span class="stat-icon"><span data-icon="arrow-down"></span></span>
@@ -86,12 +95,6 @@
               <p class="value num notranslate" id="month-out">&mdash;</p>
               <p class="muted">Money withdrawn</p>
             </div>
-          </div>
-
-          <div class="quick-actions" aria-label="Quick actions">
-            <a class="quick" href="#payments" data-quick="deposit"><span class="quick-icon"><span data-icon="arrow-down"></span></span> Add money</a>
-            <a class="quick" href="#payments" data-quick="withdrawal"><span class="quick-icon"><span data-icon="send"></span></span> Withdraw</a>
-            <a class="quick" href="#history"><span class="quick-icon"><span data-icon="list"></span></span> Statement</a>
           </div>
 
           <section class="panel" aria-labelledby="chart-title">
@@ -147,7 +150,7 @@
             <section class="panel" aria-labelledby="new-tx-title">
               <div class="panel-head">
                 <h2 id="new-tx-title">New payment</h2>
-                <span class="muted">Available <strong class="num notranslate" data-bind="available"></strong></span>
+                <span class="muted">Available <strong class="num notranslate balance-private" data-bind="available"></strong></span>
               </div>
 
               <form id="tx-form" novalidate>
@@ -169,6 +172,11 @@
                 </div>
 
                 <div id="transfer-fields" hidden>
+                  <aside class="withdrawal-cost" id="withdrawal-cost" role="note" hidden>
+                    <p><strong>Currency exchange fee (2%):</strong> <span id="withdrawal-fee">$0.00</span></p>
+                    <p><strong>Total debit if approved:</strong> <span id="withdrawal-total">$0.00</span></p>
+                    <p class="withdrawal-disclaimer">Important: Cancellation may not be possible once the payment has been completed, and third-party bank charges may not be refundable.</p>
+                  </aside>
                   <p class="no-card-note" id="withdraw-no-card" role="alert" hidden>
                     <span data-icon="lock"></span>
                     <span>You need a card to withdraw. <a href="#card">Order a card</a> from our support team first.</span>
@@ -376,6 +384,12 @@
         <div class="receipt-card">
           <p class="receipt-amount num notranslate" id="receipt-amount"></p>
           <p class="receipt-to notranslate" id="receipt-to"></p>
+          <div class="receipt-progress" id="receipt-progress" hidden>
+            <div class="receipt-progress-label"><span>Payment progress</span><strong id="receipt-progress-value">0%</strong></div>
+            <div class="receipt-progress-track" id="receipt-progress-track" role="progressbar" aria-label="Payment progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span id="receipt-progress-bar"></span>
+            </div>
+          </div>
           <ol class="tracker" id="receipt-tracker"></ol>
         </div>
 

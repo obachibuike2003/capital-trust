@@ -293,6 +293,100 @@
   font-size: 1.15rem;
 }
 
+.bank-card--account {
+  min-height: 0;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.card-balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.balance-toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.balance-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.balance-toggle:focus-visible,
+.card-action:focus-visible {
+  outline: 3px solid var(--lime);
+  outline-offset: 2px;
+}
+
+.balance-toggle .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.card-available {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  color: var(--green-100);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.875rem;
+}
+
+.card-available strong {
+  color: #fff;
+  font-size: 1rem;
+}
+
+.card-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.card-action {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 52px;
+  padding: 5px 2px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.card-action:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.card-action .icon {
+  width: 18px;
+  height: 18px;
+}
+
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -538,6 +632,55 @@
 
 /* ------------------------------------------------------------ Receipt / progress tracker */
 
+.withdrawal-cost {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3);
+  color: #68460a;
+  background: #fff8e7;
+  border: 1px solid #efd58e;
+  border-left: 4px solid #c88716;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.withdrawal-cost p + p {
+  margin-top: 4px;
+}
+
+.withdrawal-disclaimer {
+  margin-top: var(--space-2) !important;
+  padding-top: var(--space-2);
+  border-top: 1px solid #efd58e;
+}
+
+.tx-progress-form {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin-top: var(--space-2);
+  font-size: 0.8rem;
+}
+
+.tx-progress-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tx-progress-controls input {
+  width: 4.5rem;
+  min-height: 36px;
+  padding: 6px 8px;
+  font: inherit;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.tx-progress-form .sub {
+  color: var(--color-muted-foreground);
+}
+
 .receipt {
   text-align: center;
 }
@@ -626,6 +769,36 @@
   margin-top: 4px;
   font-weight: 600;
   color: var(--color-foreground);
+}
+
+.receipt-progress {
+  margin: var(--space-4) auto 0;
+  max-width: 28rem;
+  text-align: start;
+}
+
+.receipt-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+}
+
+.receipt-progress-track {
+  height: 9px;
+  overflow: hidden;
+  background: var(--green-100);
+  border-radius: 99px;
+}
+
+.receipt-progress-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--green-600);
+  border-radius: inherit;
+  transition: width 250ms ease;
 }
 
 /* Horizontal 3-step tracker, like a transfer progress screen. */

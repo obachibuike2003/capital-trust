@@ -11,6 +11,8 @@
   const profileForm = document.getElementById('profile-form');
   const passwordForm = document.getElementById('password-form');
   const receipt = document.getElementById('receipt');
+  const shell = document.querySelector('.shell');
+  const balanceToggle = document.getElementById('toggle-balances');
 
   let user = null;
   let transactions = [];
@@ -25,6 +27,12 @@
   let chartDrawn = false;
   let openReference = '';
   let receiptTx = null;
+  let balancesHidden = false;
+  try {
+    balancesHidden = localStorage.getItem('ctb-balances-hidden') === 'true';
+  } catch {
+    // Keep the toggle usable when browser storage is unavailable.
+  }
 
   const VIEWS = {
     overview: ['Overview', ''],
@@ -66,7 +74,36 @@
   }
 
   function bind(name, value) {
-    for (const el of document.querySelectorAll(`[data-bind="${name}"]`)) el.textContent = value;
+    for (const el of document.querySelectorAll(`[data-bind="${name}"]`)) {
+      if (el.classList.contains('balance-private')) {
+        el.dataset.balanceValue = value;
+        el.textContent = balancesHidden ? '••••••' : value;
+        if (balancesHidden) el.setAttribute('aria-label', 'Balance hidden');
+        else el.removeAttribute('aria-label');
+      } else {
+        el.textContent = value;
+      }
+    }
+  }
+
+  function setBalancesHidden(hidden) {
+    balancesHidden = hidden;
+    shell.classList.toggle('balances-hidden', hidden);
+    for (const el of shell.querySelectorAll('.balance-private')) {
+      if (!('balanceValue' in el.dataset)) el.dataset.balanceValue = el.textContent;
+      el.textContent = hidden ? '••••••' : el.dataset.balanceValue;
+      if (hidden) el.setAttribute('aria-label', 'Balance hidden');
+      else el.removeAttribute('aria-label');
+    }
+    balanceToggle.innerHTML = icon(hidden ? 'eye-off' : 'eye');
+    balanceToggle.setAttribute('aria-pressed', String(hidden));
+    balanceToggle.setAttribute('aria-label', hidden ? 'Show balances' : 'Hide balances');
+    balanceToggle.title = hidden ? 'Show balances' : 'Hide balances';
+    try {
+      localStorage.setItem('ctb-balances-hidden', String(hidden));
+    } catch {
+      // The preference remains active for this page view.
+    }
   }
 
   function empty(heading, text, iconName = 'list') {
@@ -354,7 +391,7 @@
       const sub =
         tx.type === 'deposit'
           ? "Your deposit has been submitted for review. We'll add it to your balance as soon as it's approved."
-          : `This payment to ${to} has been submitted for review. To avoid a duplicate, check your history before retrying.`;
+          : `This payment to ${to}, including its ${money(tx.exchangeFeeCents)} exchange fee, is awaiting admin review. To avoid a duplicate, check your history before retrying.`;
       const title = tx.type === 'deposit' ? 'Deposit in progress' : 'Withdrawal in progress';
       return { state: 'pending', badge: 'hourglass', title, sub };
     }
@@ -395,6 +432,16 @@
     document.getElementById('receipt-sub').textContent = head.sub;
     document.getElementById('receipt-amount').textContent = signed(tx);
 
+    const progress = document.getElementById('receipt-progress');
+    const showProgress = tx.type === 'withdrawal' && tx.direction === 'out' && tx.status !== 'rejected';
+    progress.hidden = !showProgress;
+    if (showProgress) {
+      const percent = tx.status === 'approved' ? 100 : Math.max(0, Math.min(99, tx.progressPercent || 0));
+      document.getElementById('receipt-progress-value').textContent = `${percent}%`;
+      document.getElementById('receipt-progress-track').setAttribute('aria-valuenow', String(percent));
+      document.getElementById('receipt-progress-bar').style.width = `${percent}%`;
+    }
+
     const to = document.getElementById('receipt-to');
     to.textContent = tx.type === 'withdrawal' && tx.direction === 'out' ? tx.recipientName : '';
     to.hidden = !to.textContent;
@@ -412,6 +459,8 @@
     const lines = [['Reference', tx.reference, true], ['Date', date(tx.createdAt)]];
     if (tx.type === 'withdrawal' && tx.direction === 'out') {
       lines.push(['To account', tx.recipientAccount, true]);
+      lines.push(['Currency exchange fee (2%)', money(tx.exchangeFeeCents)]);
+      lines.push(['Total debit if approved', money(tx.amountCents + tx.exchangeFeeCents)]);
     }
     if (tx.description) lines.push(['Your reference', tx.description, true]);
     document.getElementById('receipt-details').innerHTML = lines
@@ -433,18 +482,21 @@
     try {
       const { transactions: list } = await api('/api/transactions');
       const fresh = list.find((item) => item.id === receiptTx.id);
-      if (fresh && fresh.status !== 'pending') {
+      if (fresh && (fresh.status !== receiptTx.status || fresh.progressPercent !== receiptTx.progressPercent)) {
+        const completed = receiptTx.status === 'pending' && fresh.status !== 'pending';
         receiptTx = fresh;
         renderReceipt(fresh);
-        // Balances and history changed too; refresh them in the background.
-        transactions = list;
-        const me = await api('/api/me');
-        user = me.user;
-        renderUser();
-        renderMonth();
-        renderChart();
-        renderRecent();
-        renderHistory();
+        if (completed) {
+          // Balances and history changed too; refresh them in the background.
+          transactions = list;
+          const me = await api('/api/me');
+          user = me.user;
+          renderUser();
+          renderMonth();
+          renderChart();
+          renderRecent();
+          renderHistory();
+        }
       }
     } catch {
       /* try again on the next tick */
@@ -473,7 +525,17 @@
     transferFields.hidden = !isWithdrawal;
     // A card is required to withdraw; without one we point the customer to the Card page.
     document.getElementById('withdraw-no-card').hidden = !(isWithdrawal && !card);
+    document.getElementById('withdrawal-cost').hidden = !isWithdrawal;
     txSubmit.textContent = SUBMIT_LABELS[type];
+    updateWithdrawalEstimate();
+  }
+
+  function updateWithdrawalEstimate() {
+    const amount = Number(String(txForm.elements.amount.value).replace(/[ ,$]/g, ''));
+    const amountCents = Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : 0;
+    const feeCents = Math.round((amountCents * 200) / 10_000);
+    document.getElementById('withdrawal-fee').textContent = money(feeCents);
+    document.getElementById('withdrawal-total').textContent = money(amountCents + feeCents);
   }
 
   function useBeneficiary(id) {
@@ -501,7 +563,7 @@
       tiers = cards.tiers;
       price = cards.price;
       renderUser();
-      if (firstLoad) {
+      if (firstLoad && !balancesHidden) {
         // Balances count up once, when the dashboard first opens.
         for (const el of document.querySelectorAll('[data-bind="balance"]')) CTB.countUp(el, user.balanceCents, money);
         for (const el of document.querySelectorAll('[data-bind="available"]')) CTB.countUp(el, user.availableCents, money);
@@ -537,6 +599,8 @@
     if (user) renderChart(); // the chart cannot measure itself while its view is hidden
   });
 
+  balanceToggle.addEventListener('click', () => setBalancesHidden(!balancesHidden));
+
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
@@ -552,6 +616,8 @@
     if (event.target.name === 'saved') useBeneficiary(event.target.value);
   });
 
+  txForm.elements.amount.addEventListener('input', updateWithdrawalEstimate);
+
   txForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     CTB.clearErrors(txForm);
@@ -565,8 +631,10 @@
       if (!card) {
         return CTB.showError(txForm, 'You need a card to withdraw. Order one from the Card page first.');
       }
-      if (user && Math.round(amount * 100) > user.availableCents) {
-        return CTB.showError(txForm, `You have ${money(user.availableCents)} available. Enter a smaller amount.`, 'amount');
+      const principalCents = Math.round(amount * 100);
+      const totalCents = principalCents + Math.round((principalCents * 200) / 10_000);
+      if (user && totalCents > user.availableCents) {
+        return CTB.showError(txForm, `The amount and 2% exchange fee exceed your ${money(user.availableCents)} available balance.`, 'amount');
       }
       if (!/^[A-Za-z0-9\s]{6,40}$/.test(values.recipientAccount.trim())) {
         return CTB.showError(txForm, 'Enter the account number to send to.', 'recipientAccount');
@@ -734,6 +802,7 @@
     if (!document.hidden) pollReceipt();
   }, 4000);
 
+  setBalancesHidden(balancesHidden);
   showView(false);
   load();
 })();
