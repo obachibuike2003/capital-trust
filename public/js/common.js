@@ -2,6 +2,8 @@
 // icons, toasts and the language switcher.
 
 const CTB = (() => {
+  const apiBaseUrl = String(window.CTB_CONFIG?.apiBaseUrl || '').replace(/\/+$/, '');
+
   // Lets the stylesheet hide scroll-reveal elements only when scripts run.
   document.documentElement.classList.add('js');
 
@@ -10,11 +12,12 @@ const CTB = (() => {
   async function api(path, { method = 'GET', body } = {}) {
     let response;
     try {
-      response = await fetch(path, {
+      const requestUrl = /^https?:\/\//i.test(path) ? path : `${apiBaseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+      response = await fetch(requestUrl, {
         method,
         headers: body ? { 'Content-Type': 'application/json' } : undefined,
         body: body ? JSON.stringify(body) : undefined,
-        credentials: 'same-origin',
+        credentials: 'include',
       });
     } catch {
       throw new Error('Cannot reach the server. Check your connection and try again.');

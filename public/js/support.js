@@ -161,9 +161,7 @@
   async function start() {
     if (visitorPage) {
       // Someone already signed in keeps their account thread; admins use the console instead.
-      const me = await fetch('/api/me', { credentials: 'same-origin' })
-        .then((response) => (response.ok ? response.json() : null))
-        .catch(() => null);
+      const me = await api('/api/me').catch(() => null);
       if (me && me.user.role === 'admin') {
         opener.hidden = true;
         return;

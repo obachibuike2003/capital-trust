@@ -2,9 +2,8 @@
 
 (() => {
   // Swap the header buttons when the visitor is already signed in.
-  fetch('/api/me', { credentials: 'same-origin' })
-    .then((response) => {
-      if (!response.ok) return;
+  CTB.api('/api/me')
+    .then(() => {
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = true;
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = false;
     })

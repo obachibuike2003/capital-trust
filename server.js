@@ -14,6 +14,12 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@capitaltrust.local').toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin@12345';
+const NOTIFICATION_SERVICE_URL = (process.env.NOTIFICATION_SERVICE_URL || '').replace(/\/+$/, '');
+const NOTIFICATION_SERVICE_TOKEN = process.env.NOTIFICATION_SERVICE_TOKEN || '';
+const FRONTEND_ORIGINS = new Set(
+  (process.env.FRONTEND_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean)
+);
+const SECURE_COOKIES = process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production';
 
 // Customers and the administrator use separate cookies, so one browser can
 // be signed in to both at once without one login replacing the other.
@@ -42,7 +48,8 @@ db.exec(`
     role           TEXT NOT NULL DEFAULT 'customer',
     account_number TEXT NOT NULL UNIQUE,
     balance_cents  INTEGER NOT NULL DEFAULT 0,
-    created_at     TEXT NOT NULL
+    created_at     TEXT NOT NULL,
+    sms_opt_in     INTEGER NOT NULL DEFAULT 0
   );
 
   CREATE TABLE IF NOT EXISTS sessions (
@@ -152,6 +159,7 @@ db.exec(`
     country: 'TEXT',
     date_of_birth: 'TEXT',
     account_type: "TEXT NOT NULL DEFAULT 'savings'",
+    sms_opt_in: 'INTEGER NOT NULL DEFAULT 0',
   };
   for (const [name, definition] of Object.entries(added)) {
     if (!existing.has(name)) db.exec(`ALTER TABLE users ADD COLUMN ${name} ${definition}`);
@@ -185,15 +193,15 @@ function newAccountNumber() {
   }
 }
 
-function createUser({ fullName, email, password, role = 'customer', phone = null, country = null, dateOfBirth = null, accountType = 'savings' }) {
+function createUser({ fullName, email, password, role = 'customer', phone = null, country = null, dateOfBirth = null, accountType = 'savings', smsOptIn = false }) {
   const { hash, salt } = hashPassword(password);
   const result = db
     .prepare(
       `INSERT INTO users
-         (full_name, email, password_hash, salt, role, account_number, created_at, phone, country, date_of_birth, account_type)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         (full_name, email, password_hash, salt, role, account_number, created_at, phone, country, date_of_birth, account_type, sms_opt_in)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .run(fullName, email, hash, salt, role, newAccountNumber(), new Date().toISOString(), phone, country, dateOfBirth, accountType);
+    .run(fullName, email, hash, salt, role, newAccountNumber(), new Date().toISOString(), phone, country, dateOfBirth, accountType, smsOptIn ? 1 : 0);
   return Number(result.lastInsertRowid);
 }
 
@@ -215,6 +223,23 @@ class HttpError extends Error {
 function sendJson(res, status, body, headers = {}) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers });
   res.end(JSON.stringify(body));
+}
+
+function dispatchNotification(event, payload) {
+  if (!NOTIFICATION_SERVICE_URL || !NOTIFICATION_SERVICE_TOKEN) return;
+  fetch(`${NOTIFICATION_SERVICE_URL}/internal/notifications`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${NOTIFICATION_SERVICE_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ event, ...payload }),
+    signal: AbortSignal.timeout(5000),
+  })
+    .then((response) => {
+      if (!response.ok) console.error(`Notification service returned ${response.status} for ${event}.`);
+    })
+    .catch((error) => console.error(`Notification service unavailable for ${event}: ${error.message}`));
 }
 
 function redirect(res, location) {
@@ -267,7 +292,7 @@ function parseCookies(req) {
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
 
 function sessionCookie(token, maxAgeSeconds, name = SESSION_COOKIE) {
-  return `${name}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAgeSeconds}`;
+  return `${name}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAgeSeconds}${SECURE_COOKIES ? '; Secure' : ''}`;
 }
 
 function startSession(userId, role = 'customer') {
@@ -329,6 +354,7 @@ function publicUser(user) {
     accountNumber: user.account_number,
     accountType: user.account_type,
     phone: user.phone,
+    smsOptIn: Boolean(user.sms_opt_in),
     country: user.country,
     dateOfBirth: user.date_of_birth,
     balanceCents: user.balance_cents,
@@ -501,6 +527,7 @@ const routes = {
     const email = text(body.email, 120).toLowerCase();
     if (!EMAIL_RE.test(email)) throw new HttpError(400, 'Enter a valid email address.', 'email');
     const phone = validPhone(body.phone);
+    const smsOptIn = body.smsOptIn === true;
     const dateOfBirth = validDateOfBirth(body.dateOfBirth);
     const country = validCountry(body.country);
     const accountType = text(body.accountType, 20);
@@ -510,9 +537,10 @@ const routes = {
       throw new HttpError(409, 'An account with this email already exists. Try logging in.', 'email');
     }
 
-    const id = createUser({ fullName, email, password, phone, country, dateOfBirth, accountType });
+    const id = createUser({ fullName, email, password, phone, country, dateOfBirth, accountType, smsOptIn });
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
     sendJson(res, 201, { user: publicUser(user) }, { 'Set-Cookie': startSession(id) });
+    dispatchNotification('account_created', { email, name: fullName });
   },
 
   'POST /api/login': async (req, res) => {
@@ -543,10 +571,11 @@ const routes = {
   'PATCH /api/me': async (req, res) => {
     const user = requireUser(req);
     const body = await readJson(req);
-    db.prepare('UPDATE users SET full_name = ?, phone = ?, country = ? WHERE id = ?').run(
+    db.prepare('UPDATE users SET full_name = ?, phone = ?, country = ?, sms_opt_in = ? WHERE id = ?').run(
       validName(body.fullName),
       validPhone(body.phone),
       validCountry(body.country),
+      body.smsOptIn === undefined ? user.sms_opt_in : body.smsOptIn === true ? 1 : 0,
       user.id
     );
     sendJson(res, 200, { user: publicUser(db.prepare('SELECT * FROM users WHERE id = ?').get(user.id)) });
@@ -666,6 +695,16 @@ const routes = {
     }
     const row = db.prepare('SELECT * FROM transactions WHERE id = ?').get(Number(result.lastInsertRowid));
     sendJson(res, 201, { transaction: publicTransaction(row, user.id), user: publicUser(user) });
+    if (type === 'withdrawal') {
+      dispatchNotification('withdrawal_submitted', {
+        email: user.email,
+        name: user.full_name,
+        amountCents,
+        exchangeFeeCents,
+        reference,
+        recipientBank,
+      });
+    }
   },
 
   'GET /api/card': async (req, res) => {
@@ -872,6 +911,21 @@ async function reviewTransaction(req, res, id, action) {
     db.exec('ROLLBACK');
     throw error;
   }
+  if (action === 'approve' || action === 'reject') {
+    const notificationDetails = db.prepare(
+      `SELECT t.amount_cents, t.exchange_fee_cents, t.exchange_fee_collected, t.reference, u.full_name, u.email
+       FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.id = ?`
+    ).get(id);
+    dispatchNotification('transaction_reviewed', {
+      email: notificationDetails.email,
+      name: notificationDetails.full_name,
+      amountCents: notificationDetails.amount_cents,
+      exchangeFeeCents: notificationDetails.exchange_fee_cents,
+      feeCollectedOffline: Boolean(notificationDetails.exchange_fee_collected),
+      reference: notificationDetails.reference,
+      status: action === 'approve' ? 'approved' : 'rejected',
+    });
+  }
   sendJson(res, 200, { ok: true });
 }
 
@@ -892,7 +946,10 @@ async function updateTransactionProgress(req, res, id) {
 async function adminThread(req, res, userId) {
   requireAdmin(req);
   const customer = customerById(userId);
-  if (req.method === 'POST') addMessage(customer.id, 'admin', messageBody(await readJson(req)));
+  if (req.method === 'POST') {
+    addMessage(customer.id, 'admin', messageBody(await readJson(req)));
+    dispatchNotification('support_reply', { email: customer.email, name: customer.full_name });
+  }
   sendJson(res, 200, {
     customer: { ...publicUser(customer), card: cardFor(customer.id) },
     messages: readThread(customer.id, 'admin'),
@@ -904,7 +961,10 @@ async function adminVisitorThread(req, res, visitorId) {
   requireAdmin(req);
   const visitor = db.prepare('SELECT * FROM visitors WHERE id = ?').get(visitorId);
   if (!visitor) throw new HttpError(404, 'Conversation not found.');
-  if (req.method === 'POST') addVisitorMessage(visitor.id, 'admin', messageBody(await readJson(req)));
+  if (req.method === 'POST') {
+    addVisitorMessage(visitor.id, 'admin', messageBody(await readJson(req)));
+    if (visitor.email) dispatchNotification('support_reply', { email: visitor.email, name: visitor.name });
+  }
   sendJson(res, 200, {
     visitor: { id: visitor.id, fullName: visitor.name, email: visitor.email, createdAt: visitor.created_at },
     messages: readVisitorThread(visitor.id, 'admin'),
@@ -1073,9 +1133,33 @@ const server = http.createServer(async (req, res) => {
   );
   const url = new URL(req.url, 'https://localhost');
   const pathname = decodeURIComponent(url.pathname);
+  const isApi = pathname.startsWith('/api/');
+  const origin = req.headers.origin;
+  const requestScheme = String(req.headers['x-forwarded-proto'] || (req.socket.encrypted ? 'https' : 'http'))
+    .split(',')[0]
+    .trim();
+  const requestOrigin = `${requestScheme}://${req.headers.host}`;
+  const isSameOrigin = origin === requestOrigin;
+  const isAllowedOrigin = Boolean(origin && (isSameOrigin || FRONTEND_ORIGINS.has(origin)));
+
+  if (isApi && origin && !isAllowedOrigin) {
+    return sendJson(res, 403, { error: 'Origin is not allowed.' });
+  }
+  if (isApi && origin && FRONTEND_ORIGINS.has(origin) && !isSameOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Vary', 'Origin');
+  }
+  if (isApi && req.method === 'OPTIONS') {
+    if (!isAllowedOrigin) return sendJson(res, 403, { error: 'Origin is not allowed.' });
+    res.writeHead(204).end();
+    return;
+  }
 
   try {
-    if (pathname.startsWith('/api/')) {
+    if (isApi) {
       const review = pathname.match(/^\/api\/admin\/transactions\/(\d+)\/(approve|reject)$/);
       if (review && req.method === 'POST') return await reviewTransaction(req, res, Number(review[1]), review[2]);
 

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Capital Trust Bank</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f1faf5;color:#0e1f18;font-family:Arial,Helvetica,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f1faf5;padding:28px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #dce7e1;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="padding:22px 28px;background:#0a4d36;color:#ffffff;border-bottom:4px solid #a8eb7a;">
+                <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#b9e4cd;">Capital Trust</div>
+                <div style="margin-top:4px;font-size:20px;font-weight:700;">Banking, with confidence.</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:30px 28px 20px;">
+                <h1 style="margin:0 0 16px;font-size:24px;line-height:1.25;color:#053b2a;">{{ intro }}</h1>
+                <p style="margin:0 0 20px;font-size:16px;line-height:1.55;">Hello {{ name }},</p>
+                {% if details %}
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 22px;background:#f8fcf9;border:1px solid #dce7e1;">
+                  {% for item in details %}
+                  <tr>
+                    <td style="padding:12px 14px;border-bottom:1px solid #dce7e1;font-size:14px;color:#53655c;">{{ item.label }}</td>
+                    <td align="right" style="padding:12px 14px;border-bottom:1px solid #dce7e1;font-size:14px;font-weight:700;color:#0e1f18;">{{ item.value }}</td>
+                  </tr>
+                  {% endfor %}
+                </table>
+                {% endif %}
+                <p style="margin:0;font-size:14px;line-height:1.55;color:#53655c;">For your security, Capital Trust Bank will never ask you to email your password or card security code.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 28px;background:#f8fcf9;border-top:1px solid #dce7e1;font-size:12px;line-height:1.5;color:#53655c;">
+                Capital Trust Bank<br />
+                This is an automated account notification. Please sign in to your account or contact support if you need help.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
