@@ -71,7 +71,7 @@
 
     CTB.setLoading(submit, true);
     try {
-      await CTB.api('/api/register', { method: 'POST', body: values });
+      await CTB.api('/api/register', { method: 'POST', body: { ...values, smsOptIn: Boolean(values.smsOptIn) } });
       location.href = '/dashboard';
     } catch (error) {
       if (STEP_OF[error.field]) showStep(1);

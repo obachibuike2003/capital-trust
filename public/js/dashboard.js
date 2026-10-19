@@ -381,6 +381,7 @@
     profileForm.elements.fullName.value = user.fullName;
     profileForm.elements.email.value = user.email;
     profileForm.elements.phone.value = user.phone || '';
+    profileForm.elements.smsOptIn.checked = user.smsOptIn;
     profileForm.elements.country.innerHTML = CTB.countryOptions(user.country || '');
   }
 
@@ -761,7 +762,7 @@
     CTB.setLoading(button, true);
     try {
       const values = Object.fromEntries(new FormData(profileForm));
-      user = (await api('/api/me', { method: 'PATCH', body: values })).user;
+      user = (await api('/api/me', { method: 'PATCH', body: { ...values, smsOptIn: Boolean(values.smsOptIn) } })).user;
       renderUser();
       toast('Your details have been saved.');
     } catch (error) {
