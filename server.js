@@ -58,9 +58,11 @@ db.exec(`
     type              TEXT NOT NULL,
     amount_cents      INTEGER NOT NULL,
     exchange_fee_cents INTEGER NOT NULL DEFAULT 0,
+    exchange_fee_collected INTEGER NOT NULL DEFAULT 0,
     progress_percent  INTEGER NOT NULL DEFAULT 0,
     recipient_account TEXT,
     recipient_name    TEXT,
+    recipient_bank    TEXT,
     recipient_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     description       TEXT,
     status            TEXT NOT NULL DEFAULT 'pending',
@@ -125,7 +127,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_tx_status ON transactions(status);
 `);
 
-// Add withdrawal accounting fields to databases created before fee/progress support.
+// Add withdrawal fields to databases created before fee, progress, and bank details were stored.
 {
   const existing = new Set(db.prepare('PRAGMA table_info(transactions)').all().map((column) => column.name));
   if (!existing.has('exchange_fee_cents')) {
@@ -133,6 +135,12 @@ db.exec(`
   }
   if (!existing.has('progress_percent')) {
     db.exec('ALTER TABLE transactions ADD COLUMN progress_percent INTEGER NOT NULL DEFAULT 0');
+  }
+  if (!existing.has('exchange_fee_collected')) {
+    db.exec('ALTER TABLE transactions ADD COLUMN exchange_fee_collected INTEGER NOT NULL DEFAULT 0');
+  }
+  if (!existing.has('recipient_bank')) {
+    db.exec('ALTER TABLE transactions ADD COLUMN recipient_bank TEXT');
   }
 }
 
@@ -305,7 +313,7 @@ function requireAdmin(req) {
 function pendingOutgoingCents(userId) {
   return db
     .prepare(
-      `SELECT COALESCE(SUM(amount_cents + exchange_fee_cents), 0) AS total FROM transactions
+      `SELECT COALESCE(SUM(amount_cents), 0) AS total FROM transactions
        WHERE user_id = ? AND status = 'pending' AND type IN ('withdrawal', 'transfer')`
     )
     .get(userId).total;
@@ -337,11 +345,13 @@ function publicTransaction(row, viewerId) {
     type: row.type,
     amountCents: row.amount_cents,
     exchangeFeeCents: row.exchange_fee_cents || 0,
+    exchangeFeeCollectedOffline: Boolean(row.exchange_fee_collected),
     progressPercent: row.progress_percent || 0,
     // "in" adds to the viewer's balance, "out" takes from it.
     direction: row.type === 'deposit' || (viewerId && row.user_id !== viewerId) ? 'in' : 'out',
     recipientAccount: row.recipient_account,
     recipientName: row.recipient_name,
+    recipientBank: row.recipient_bank,
     description: row.description,
     status: row.status,
     adminNote: row.admin_note,
@@ -601,6 +611,7 @@ const routes = {
     // Withdrawing means sending money to an account, so it needs a card and recipient details.
     let recipientAccount = null;
     let recipientName = null;
+    let recipientBank = null;
     let recipientUserId = null;
     if (type === 'withdrawal') {
       if (!db.prepare('SELECT 1 FROM cards WHERE user_id = ?').get(user.id)) {
@@ -608,6 +619,7 @@ const routes = {
       }
       recipientAccount = text(body.recipientAccount, 34).replace(/\s+/g, '');
       recipientName = text(body.recipientName, 80);
+      recipientBank = text(body.recipientBank, 80);
       if (!/^[A-Za-z0-9]{6,34}$/.test(recipientAccount)) {
         throw new HttpError(400, 'Enter the account number to send to (6 to 34 letters or digits).', 'recipientAccount');
       }
@@ -615,13 +627,14 @@ const routes = {
         throw new HttpError(400, 'You cannot withdraw to your own account.', 'recipientAccount');
       }
       if (recipientName.length < 2) throw new HttpError(400, 'Enter the name on the account.', 'recipientName');
+      if (recipientBank.length < 2) throw new HttpError(400, 'Enter the recipient bank name.', 'recipientBank');
       const recipient = db.prepare('SELECT id FROM users WHERE account_number = ?').get(recipientAccount);
       if (recipient) recipientUserId = recipient.id;
     }
 
     if (type !== 'deposit') {
       const available = user.balance_cents - pendingOutgoingCents(user.id);
-      if (amountCents + exchangeFeeCents > available) {
+      if (amountCents > available) {
         throw new HttpError(400, 'This is more than your available balance.', 'amount');
       }
     }
@@ -630,8 +643,8 @@ const routes = {
     const result = db
       .prepare(
         `INSERT INTO transactions
-           (reference, user_id, type, amount_cents, exchange_fee_cents, recipient_account, recipient_name, recipient_user_id, description, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+           (reference, user_id, type, amount_cents, exchange_fee_cents, recipient_account, recipient_name, recipient_bank, recipient_user_id, description, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         reference,
@@ -641,6 +654,7 @@ const routes = {
         exchangeFeeCents,
         recipientAccount,
         recipientName,
+        recipientBank,
         recipientUserId,
         text(body.description, 140) || null,
         new Date().toISOString()
@@ -826,12 +840,15 @@ async function reviewTransaction(req, res, id, action) {
     if (tx.status !== 'pending') throw new HttpError(409, 'This transaction has already been reviewed.');
 
     if (action === 'approve') {
+      if (tx.type === 'withdrawal' && tx.exchange_fee_cents > 0 && body.feeCollectedOffline !== true) {
+        throw new HttpError(400, 'Confirm the exchange fee was collected offline before approving.', 'feeCollectedOffline');
+      }
       const owner = db.prepare('SELECT * FROM users WHERE id = ?').get(tx.user_id);
       const adjust = db.prepare('UPDATE users SET balance_cents = balance_cents + ? WHERE id = ?');
       if (tx.type === 'deposit') {
         adjust.run(tx.amount_cents, owner.id);
       } else {
-        const debitCents = tx.amount_cents + tx.exchange_fee_cents;
+        const debitCents = tx.amount_cents;
         if (owner.balance_cents < debitCents) {
           throw new HttpError(409, 'The customer does not have enough funds. Reject this request instead.');
         }
@@ -841,9 +858,10 @@ async function reviewTransaction(req, res, id, action) {
       }
     }
 
-    db.prepare('UPDATE transactions SET status = ?, progress_percent = ?, admin_note = ?, reviewed_at = ?, reviewed_by = ? WHERE id = ?').run(
+    db.prepare('UPDATE transactions SET status = ?, progress_percent = ?, exchange_fee_collected = ?, admin_note = ?, reviewed_at = ?, reviewed_by = ? WHERE id = ?').run(
       action === 'approve' ? 'approved' : 'rejected',
       action === 'approve' && tx.type === 'withdrawal' ? 100 : tx.progress_percent,
+      action === 'approve' && tx.type === 'withdrawal' && tx.exchange_fee_cents > 0 ? 1 : tx.exchange_fee_collected,
       note,
       new Date().toISOString(),
       admin.id,
@@ -1037,9 +1055,6 @@ function serveStatic(req, res, pathname) {
     res.writeHead(200, {
       'Content-Type': MIME[path.extname(filePath)] || 'application/octet-stream',
       'Cache-Control': 'no-cache',
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'Referrer-Policy': 'same-origin',
     });
     res.end(data);
   });
@@ -1048,7 +1063,15 @@ function serveStatic(req, res, pathname) {
 // ---------------------------------------------------------------- server
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, 'http://localhost');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'same-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://translate.google.com https://translate.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src https://translate.google.com; connect-src 'self'; form-action 'self'; base-uri 'self'"
+  );
+  const url = new URL(req.url, 'https://localhost');
   const pathname = decodeURIComponent(url.pathname);
 
   try {
@@ -1097,5 +1120,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Capital Trust Bank is running at http://localhost:${PORT}`);
+  console.log(`Capital Trust Bank is running on localhost:${PORT}`);
 });

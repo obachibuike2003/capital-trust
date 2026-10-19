@@ -458,9 +458,9 @@
 
     const lines = [['Reference', tx.reference, true], ['Date', date(tx.createdAt)]];
     if (tx.type === 'withdrawal' && tx.direction === 'out') {
+      if (tx.recipientBank) lines.push(['Recipient bank', tx.recipientBank, true]);
       lines.push(['To account', tx.recipientAccount, true]);
       lines.push(['Currency exchange fee (2%)', money(tx.exchangeFeeCents)]);
-      lines.push(['Total debit if approved', money(tx.amountCents + tx.exchangeFeeCents)]);
     }
     if (tx.description) lines.push(['Your reference', tx.description, true]);
     document.getElementById('receipt-details').innerHTML = lines
@@ -535,7 +535,6 @@
     const amountCents = Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : 0;
     const feeCents = Math.round((amountCents * 200) / 10_000);
     document.getElementById('withdrawal-fee').textContent = money(feeCents);
-    document.getElementById('withdrawal-total').textContent = money(amountCents + feeCents);
   }
 
   function useBeneficiary(id) {
@@ -632,9 +631,11 @@
         return CTB.showError(txForm, 'You need a card to withdraw. Order one from the Card page first.');
       }
       const principalCents = Math.round(amount * 100);
-      const totalCents = principalCents + Math.round((principalCents * 200) / 10_000);
-      if (user && totalCents > user.availableCents) {
-        return CTB.showError(txForm, `The amount and 2% exchange fee exceed your ${money(user.availableCents)} available balance.`, 'amount');
+      if (user && principalCents > user.availableCents) {
+        return CTB.showError(txForm, `You have ${money(user.availableCents)} available. Enter a smaller amount.`, 'amount');
+      }
+      if (values.recipientBank.trim().length < 2) {
+        return CTB.showError(txForm, 'Enter the recipient bank name.', 'recipientBank');
       }
       if (!/^[A-Za-z0-9\s]{6,40}$/.test(values.recipientAccount.trim())) {
         return CTB.showError(txForm, 'Enter the account number to send to.', 'recipientAccount');

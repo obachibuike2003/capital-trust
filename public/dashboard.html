@@ -174,8 +174,6 @@
                 <div id="transfer-fields" hidden>
                   <aside class="withdrawal-cost" id="withdrawal-cost" role="note" hidden>
                     <p><strong>Currency exchange fee (2%):</strong> <span id="withdrawal-fee">$0.00</span></p>
-                    <p><strong>Total debit if approved:</strong> <span id="withdrawal-total">$0.00</span></p>
-                    <p class="withdrawal-disclaimer">Important: Cancellation may not be possible once the payment has been completed, and third-party bank charges may not be refundable.</p>
                   </aside>
                   <p class="no-card-note" id="withdraw-no-card" role="alert" hidden>
                     <span data-icon="lock"></span>
@@ -184,6 +182,10 @@
                   <div class="field" id="saved-field" hidden>
                     <label for="saved">Saved recipient</label>
                     <select id="saved" name="saved"></select>
+                  </div>
+                  <div class="field">
+                    <label for="recipientBank">Recipient bank name</label>
+                    <input id="recipientBank" name="recipientBank" type="text" autocomplete="organization" maxlength="80" />
                   </div>
                   <div class="field">
                     <label for="recipientAccount">Recipient account number</label>
@@ -404,6 +406,6 @@
 
     <script src="/js/common.js"></script>
     <script src="/js/dashboard.js"></script>
-    <script src="/js/support.js"></script>
+    <script src="/js/support.js" defer></script>
   </body>
 </html>

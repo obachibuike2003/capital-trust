@@ -50,8 +50,10 @@
     if (tx.recipientName) {
       lines.push(`<span class="sub">To ${esc(tx.recipientName)} &middot; <span class="notranslate">${esc(tx.recipientAccount)}</span></span>`);
     }
+    if (tx.recipientBank) lines.push(`<span class="sub">Bank: ${esc(tx.recipientBank)}</span>`);
     if (tx.type === 'withdrawal') {
       lines.push(`<span class="sub">2% exchange fee ${esc(money(tx.exchangeFeeCents))}</span>`);
+      if (tx.exchangeFeeCollectedOffline) lines.push('<span class="sub">Fee collected offline</span>');
     }
     if (tx.description) lines.push(`<span class="sub">${esc(tx.description)}</span>`);
     if (tx.adminNote) lines.push(`<span class="sub">Note: ${esc(tx.adminNote)}</span>`);
@@ -326,12 +328,17 @@
   function openReview(tx, action) {
     reviewing = { tx, action };
     const approve = action === 'approve';
+    const requiresOfflineFee = approve && tx.type === 'withdrawal' && tx.exchangeFeeCents > 0;
     CTB.clearErrors(reviewForm);
     reviewForm.reset();
+    document.getElementById('offline-fee-confirmation').hidden = !requiresOfflineFee;
+    document.getElementById('offline-fee-amount').textContent = money(tx.exchangeFeeCents);
 
     document.getElementById('review-title').textContent = approve ? 'Approve transaction' : 'Reject transaction';
     document.getElementById('review-lead').textContent = approve
-      ? "The customer's balance will be updated straight away."
+      ? requiresOfflineFee
+        ? `Collect the ${money(tx.exchangeFeeCents)} exchange fee offline before approving. The customer's balance will be updated straight away.`
+        : "The customer's balance will be updated straight away."
       : "The customer's balance will not change.";
     document.getElementById('note-label').textContent = approve
       ? 'Note to customer (optional)'
@@ -426,9 +433,13 @@
     CTB.setLoading(reviewConfirm, true);
     try {
       const { tx, action } = reviewing;
+      const feeCollectedOffline = reviewForm.elements.feeCollectedOffline.checked;
+      if (action === 'approve' && tx.type === 'withdrawal' && tx.exchangeFeeCents > 0 && !feeCollectedOffline) {
+        return CTB.showError(reviewForm, 'Confirm that the exchange fee was collected offline before approving.');
+      }
       await api(`/api/admin/transactions/${tx.id}/${action}`, {
         method: 'POST',
-        body: { note: reviewForm.elements.note.value },
+        body: { note: reviewForm.elements.note.value, feeCollectedOffline },
       });
       reviewDialog.close();
       toast(action === 'approve' ? 'Transaction approved.' : 'Transaction rejected.');
